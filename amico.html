@@ -259,7 +259,7 @@
         <h1 id="mpEndTitle">FINE</h1>
         <div class="big" id="mpEndScore">0 - 0</div>
         <p id="mpEndSub"></p>
-        <div class="btns"><button class="btn gold" id="mpAgain" type="button">RIVINCITA</button><button class="btn blue" id="mpMenu" type="button">MENU</button></div>
+        <div class="btns"><button class="btn gold" id="mpAgain" type="button">RIVINCITA</button><button class="btn" id="mpSwap" type="button">INVERTI I RUOLI</button><button class="btn blue" id="mpMenu" type="button">MENU</button></div>
       </div>
       <div class="overlay" id="ovEnd" hidden>
         <h1 id="endTitle">FINE SERIE</h1>
@@ -2510,7 +2510,10 @@
     const app = firebase.apps.length ? firebase.app() : firebase.initializeApp(FB_CONFIG), db = firebase.database(app);
     const id = Math.random().toString(36).slice(2, 10), base = db.ref('rigori/' + code + '/p'), me = base.child(id);
     me.onDisconnect().remove();
-    db.ref('.info/serverTimeOffset').on('value', sn => { MP.mySOff = sn.val() || 0; mpPres({ sOff: MP.mySOff }); });
+    db.ref('.info/serverTimeOffset').on('value', sn => { MP.mySOff = sn.val() || 0; MP.me.sOff = MP.mySOff; me.update({ sOff: MP.mySOff }).catch(() => {}); });
+    const TS = firebase.database.ServerValue ? firebase.database.ServerValue.TIMESTAMP : null;
+    const beat = () => me.update({ hb: TS || (wall() + (MP.mySOff || 0)) }).catch(() => {});
+    beat(); setInterval(beat, 2500);   // battito: chi non batte da 10 secondi è un fantasma
     let cb = () => {};
     base.on('value', sn => { const v = sn.val() || {}; cb(Object.keys(v).filter(k => k !== id).map(k => Object.assign({ peer: k }, v[k]))); });
     return { kind: 'firebase', presence: p => { me.update(p).catch(() => {}); }, onPeers: f => { cb = f; } };
@@ -2541,7 +2544,10 @@
     $('mpPick').hidden = false; mpLobby();
   }
   function mpOnPeers(list){
-    const o = list.slice().sort((a, b) => a.peer < b.peer ? -1 : 1)[0] || null;
+    const srvNow = wall() + (MP.mySOff || 0);
+    const fresh = list.filter(p => p.hb == null || srvNow - p.hb < 10000);
+    fresh.sort((a, b) => ((mpValid(b) ? 1 : 0) - (mpValid(a) ? 1 : 0)) || ((b.hb || 0) - (a.hb || 0)) || (a.peer < b.peer ? -1 : 1));
+    const o = fresh[0] || null;
     MP.opp = o;
     if (o && o.ping && o.ping.id !== MP.lastPongFor){ MP.lastPongFor = o.ping.id; mpPres({ pong: { id: o.ping.id, t: wall() } }); }
     if (o && o.pong && MP.ping && o.pong.id === MP.ping.id && !MP.ping.done){
@@ -2550,6 +2556,8 @@
       if (rtt < MP.offRtt){ MP.offRtt = rtt; if (!srv) MP.off = est; } else if (!srv && rtt < MP.offRtt*1.3) MP.off = MP.off*.7 + est*.3;
     }
     if (o && o.sOff != null && MP.mySOff != null) MP.off = MP.mySOff - o.sOff;   // scarto preciso dall'orologio di Firebase
+    // l'amico ha chiesto la rivincita: lo seguo
+    if (S.mp && S.mp.phase === 'end' && o && o.pick && o.pick.e > MP.me.e){ MP.me.e = o.pick.e; S.mp = null; S.mode = 'title'; $('ovMpEnd').hidden = true; mpPres({ e: MP.me.e, pick: null, choice: null, go: null }); }
     mpLobby();
   }
   // misura continua del ritardo e dello scarto tra gli orologi dei due telefoni
@@ -2563,7 +2571,7 @@
   const roleW = r => r === 'tira' ? 'ATTACCANTE' : 'PORTIERE';
   function mpSetMode(m){
     MP.mode = m; $('mpSfida').classList.toggle('sel', m === 'sfida'); $('mpLeg').classList.toggle('sel', m === 'leggenda');
-    $('mpModeSt').textContent = m === 'sfida' ? 'Rigori alternati, 5 a testa poi oltranza' : 'Ruoli fissi a oltranza, poi rivincita a ruoli invertiti';
+    $('mpModeSt').textContent = m === 'sfida' ? 'Rigori alternati, 5 a testa poi oltranza' : 'Ruoli fissi: si tira a oltranza finché l\'attaccante non sbaglia';
   }
   function mpLobby(){
     if (S.mp) return;
@@ -2610,19 +2618,15 @@
       const v = sfVerdict(); if (v) return v === 'vittoria' ? 'mf' : 'av';
       return sf.mf.length >= 30 ? 'pari' : null;
     }
-    if (m.leg === 1 && (sf.mf.includes(false) || sf.mf.length >= 25)){ m.leg = 2; m.legSwitch = true; }
-    if (m.leg === 2 && (sf.bar.includes(false) || sf.bar.length >= 25)){
-      const a = mpStreak(sf.mf), b = mpStreak(sf.bar); return a > b ? 'mf' : b > a ? 'av' : 'pari';
-    }
-    return null;
+    return (sf.mf.includes(false) || sf.mf.length >= 50) ? 'serie' : null;
   }
   function mpNext(){
     const m = S.mp; if (!m) return;
     const v = mpVerdict(); if (v){ mpEnd(v); return; }
     m.r++;
-    m.shooter = m.mode === 'sfida' ? (sfNext() === 'mf' ? 'mf' : 'av') : (m.leg === 1 ? 'mf' : 'av');
+    m.shooter = m.mode === 'sfida' ? (sfNext() === 'mf' ? 'mf' : 'av') : 'mf';
     m.keeper = m.shooter === 'mf' ? 'av' : 'mf';
-    m.forced = null; m.goAt = 0; m.deadline = wall() + 15000; m.phase = 'choose';
+    m.forced = null; m.goAt = 0; m.bothAt = 0; m.resend = 0; m.deadline = wall() + 15000; m.phase = 'choose';
     mpPres({ choice: null, go: null });
     if (m.shooter === m.team) mpNewShot(); else mpNewKeeper();
     if (m.legSwitch){ m.legSwitch = false; bigText('SI INVERTONO\nI RUOLI', '#ffd23f', 2.2); }
@@ -2669,13 +2673,19 @@
       if (m.shooter === m.team) mpShooterChoose(S.mode === 'aimY' ? S.lockU : S.u * .6, S.mode === 'aimY' ? S.v : .3);
       else keeperPick(0, .35);
     }
+    if (m.phase === 'wait' && t - (m.resend || 0) > 3000){
+      m.resend = t; if (MP.me.choice) mpPres({ choice: MP.me.choice }); if (MP.me.go && MP.me.go.r === m.r) mpPres({ go: MP.me.go });
+    }
     if (m.phase === 'wait' && MP.opp){
       const oc = MP.opp.choice, mc = MP.me.choice, e = MP.me.e;
       if (oc && mc && oc.e === e && oc.r === m.r && mc.r === m.r){
         const iShoot = m.shooter === m.team, shot = iShoot ? mc : oc, kp = iShoot ? oc : mc;
         if (iShoot && !(MP.me.go && MP.me.go.r === m.r && MP.me.go.e === e)) mpPres({ go: { e, r: m.r, at: t + 1300 } });
         const og = MP.opp.go;
-        const at = iShoot ? MP.me.go.at : (og && og.e === e && og.r === m.r ? og.at - MP.off : 0);
+        let at = iShoot ? MP.me.go.at : (og && og.e === e && og.r === m.r ? og.at - MP.off : 0);
+        if (!iShoot && at && (at > t + 2500 || at < t - 2000)) at = t + 300;   // orario assurdo: si parte subito
+        if (!m.bothAt) m.bothAt = t;
+        if (!at && t - m.bothAt > 8000) at = t + 200;                          // il via non arriva: si parte comunque
         if (at){
           m.shot = { u: shot.u, v: shot.v }; m.kp = { u: kp.u, v: kp.v }; m.forced = mpJudge(m.shot, m.kp);
           m.goAt = at; m.phase = 'armed'; hint('', false);
@@ -2711,9 +2721,16 @@
   function mpEnd(v){
     const m = S.mp; m.phase = 'end'; S.mode = 'over'; hideSubs();
     const { a, b } = sfState();
-    $('mpEndTitle').textContent = v === 'pari' ? 'PAREGGIO' : v === m.team ? 'HAI VINTO!' : 'HAI PERSO';
-    $('mpEndScore').textContent = m.mode === 'sfida' ? 'MF ' + a + ' - ' + b + ' OSP' : 'SERIE ' + mpStreak(S.sf.mf) + ' - ' + mpStreak(S.sf.bar);
-    $('mpEndSub').textContent = m.team === 'mf' ? 'Hai giocato con Manfredonia' : 'Hai giocato con la squadra ospite';
+    if (v === 'serie'){
+      const n = mpStreak(S.sf.mf), last = S.sf.mf.length ? S.ks && S.mp.forced : null;
+      $('mpEndTitle').textContent = m.team === 'mf' ? 'FINE SERIE' : (m.forced === 'parata' ? 'L\'HAI PARATO!' : 'FINE SERIE');
+      $('mpEndScore').textContent = n === 1 ? '1 RIGORE SEGNATO' : n + ' RIGORI DI FILA';
+      $('mpEndSub').textContent = m.team === 'mf' ? 'Eri l\'attaccante' : 'Eri il portiere';
+    } else {
+      $('mpEndTitle').textContent = v === 'pari' ? 'PAREGGIO' : v === m.team ? 'HAI VINTO!' : 'HAI PERSO';
+      $('mpEndScore').textContent = 'MF ' + a + ' - ' + b + ' OSP';
+      $('mpEndSub').textContent = m.team === 'mf' ? 'Hai giocato con Manfredonia' : 'Hai giocato con la squadra ospite';
+    }
     $('ovMpEnd').hidden = false; try { sfx.end(); } catch(e) {}
   }
   // divise: le stesse figure del gioco, ricolorate
@@ -2764,11 +2781,16 @@
   $('mpLeg').addEventListener('click', () => { if (!mpValid(MP.me)) mpSetMode('leggenda'); });
   $('mpTira').addEventListener('click', () => mpPickRole('tira'));
   $('mpPara').addEventListener('click', () => mpPickRole('para'));
-  $('mpAgain').addEventListener('click', () => {
-    const oe = (MP.opp && MP.opp.e) || 0;
-    MP.me.e = Math.max(MP.me.e + 1, oe); mpPres({ e: MP.me.e, pick: null, choice: null, go: null });
-    S.mp = null; S.mode = 'title'; $('ovMpEnd').hidden = true; $('ovMp').hidden = false; mpLobby();
-  });
+  function mpRematch(swap){
+    const m = S.mp; if (!m) return;
+    const mine = m.team === 'mf' ? 'tira' : 'para', role = swap ? (mine === 'tira' ? 'para' : 'tira') : mine, mode = m.mode;
+    const oe = (MP.opp && MP.opp.e) || 0; MP.me.e = Math.max(MP.me.e + 1, oe);
+    S.mp = null; S.mode = 'title'; $('ovMpEnd').hidden = true;
+    mpPres({ e: MP.me.e, pick: { role, mode, at: wall(), e: MP.me.e }, choice: null, go: null });
+    $('ovMp').hidden = false; $('mpPick').hidden = false; mpSetMode(mode); mpLobby();
+  }
+  $('mpAgain').addEventListener('click', () => mpRematch(false));
+  $('mpSwap').addEventListener('click', () => mpRematch(true));
   $('mpMenu').addEventListener('click', () => { S.mp = null; S.mode = 'title'; $('ovMpEnd').hidden = true; $('ovStart').hidden = false; });
   $('btnSfida').addEventListener('click', () => { dropSuspended(); ac(); unlockVoice(); ready.then(() => startGame('sfida')); });
   $('btnLeggenda').addEventListener('click', () => { dropSuspended(); ac(); unlockVoice(); ready.then(() => startGame('leggenda')); });
