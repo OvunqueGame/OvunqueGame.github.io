@@ -55,6 +55,14 @@
   .overlay .big{font-size:clamp(20px,6vw,40px)}
   .btn{font:inherit;font-size:clamp(9px,2.2vw,12px);background:var(--red);color:var(--white);border:0;padding:12px 16px 10px;box-shadow:4px 4px 0 #000;cursor:pointer}
   .btn.blue{background:#1d4fd0}
+  .mpbox{display:flex;flex-direction:column;gap:10px;align-items:center;max-width:520px;width:100%}
+  .mpbox .btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .btn.sel{outline:4px solid var(--yellow);outline-offset:2px}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  #mpCode{font:inherit;font-size:16px;width:7em;text-align:center;letter-spacing:4px;padding:10px;background:#05081a;color:var(--yellow);border:3px solid #fff}
+  .mpcode{font-size:clamp(20px,6vw,34px);color:var(--yellow);letter-spacing:8px}
+  .mpst{font-size:clamp(8px,2vw,11px);line-height:1.9;text-align:center;margin:0}
+
   .btn.gold{background:var(--yellow);color:#05081a;text-decoration:none;display:inline-block;margin-top:8px}
   .overlay p.credit .social{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:6px}
   .overlay p.credit .social .btn{text-decoration:none;margin-top:0}
@@ -203,6 +211,21 @@
         <button type="button" id="btnRestart" aria-label="Ricomincia">↻ DA CAPO</button>
         <button type="button" id="btnMenu" aria-label="Menu principale">MENU</button>
       </div>
+      <div class="gbtns" id="mpBar" hidden>
+        <button type="button" id="mpPauseB" aria-label="Pausa">❚❚ PAUSA</button>
+        <button type="button" id="mpExitB" aria-label="Esci dalla partita">✖ ESCI</button>
+      </div>
+      <div class="overlay" id="ovMpPause" hidden>
+        <h1>PAUSA</h1>
+        <div class="big" id="mpPauseT">25</div>
+        <p id="mpPauseWho"></p>
+        <div class="btns"><button class="btn gold" id="mpResume" type="button">RIPRENDI</button></div>
+      </div>
+      <div class="overlay" id="ovMpExit" hidden>
+        <h1>VUOI USCIRE?</h1>
+        <p>Se esci perdi la partita e vince il tuo amico.</p>
+        <div class="btns"><button class="btn gold" id="mpExitYes" type="button">ESCI</button><button class="btn blue" id="mpExitNo" type="button">ANNULLA</button></div>
+      </div>
       <div class="overlay" id="ovPause" hidden>
         <h1>PAUSA</h1>
         <div class="btns">
@@ -216,6 +239,7 @@
         <button class="btn gold" id="btnBackGame" type="button" hidden>▶ TORNA ALLA PARTITA</button>
         <div class="modes">
           <button class="mode" id="btnSfida" type="button" disabled><b>SFIDA</b><span>Rigori alternati: un rigore lo tiri, uno lo pari. 5 a testa, poi oltranza.</span></button>
+          <button class="mode" id="btnAmico" type="button"><b>SFIDA UN AMICO</b><span>Due telefoni: uno tira, l'altro para. Stesso rigore, nello stesso istante.</span></button>
           <button class="mode" id="btnLeggenda" type="button" disabled><b>LEGGENDA DEL MIRAMARE</b><span>Solo tiri, a oltranza e sempre più veloci: al primo errore è finita.</span></button>
         </div>
         <div class="audsel" role="radiogroup" aria-label="Audio"><span>AUDIO</span>
@@ -229,6 +253,28 @@
           <li><b>TELECRONACA</b> tocca per andare avanti</li>
         </ul>
         <div class="rotate" aria-hidden="false"><span class="phone"></span><span>Ruota il telefono in orizzontale per giocare meglio</span></div>
+      </div>
+      <div class="overlay" id="ovMp" hidden>
+        <h1>SFIDA UN AMICO</h1>
+        <div class="mpbox">
+          <div class="btns"><button class="btn gold" id="mpCreate" type="button">CREA PARTITA</button></div>
+          <div class="btns"><input id="mpCode" inputmode="numeric" maxlength="4" placeholder="CODICE" aria-label="Codice partita"><button class="btn blue" id="mpJoin" type="button">ENTRA</button></div>
+          <div class="mpcode" id="mpCodeShow" hidden></div>
+          <p class="mpst" id="mpStatus">Crea una partita e manda il codice al tuo amico, oppure scrivi il suo codice.</p>
+          <div class="mpbox" id="mpPick" hidden>
+            <div class="btns"><button class="btn" id="mpSfida" type="button">SFIDA</button><button class="btn" id="mpLeg" type="button">LEGGENDA</button></div>
+            <p class="mpst" id="mpModeSt"></p>
+            <div class="btns"><button class="btn" id="mpTira" type="button">ATTACCANTE</button><button class="btn" id="mpPara" type="button">PORTIERE</button></div>
+            <p class="mpst" id="mpPickSt"></p>
+          </div>
+          <div class="btns"><button class="btn blue" id="mpBack" type="button">INDIETRO</button></div>
+        </div>
+      </div>
+      <div class="overlay" id="ovMpEnd" hidden>
+        <h1 id="mpEndTitle">FINE</h1>
+        <div class="big" id="mpEndScore">0 - 0</div>
+        <p id="mpEndSub"></p>
+        <div class="btns"><button class="btn gold" id="mpAgain" type="button">RIVINCITA</button><button class="btn" id="mpSwap" type="button">INVERTI I RUOLI</button><button class="btn blue" id="mpMenu" type="button">MENU</button></div>
       </div>
       <div class="overlay" id="ovEnd" hidden>
         <h1 id="endTitle">FINE SERIE</h1>
@@ -255,6 +301,8 @@
   </div>
 </div>
 
+<script src="fb/firebase-app-compat.js"></script>
+<script src="fb/firebase-database-compat.js"></script>
 <script>
 (() => {
   const W = 1256, H = 941;
@@ -267,7 +315,7 @@
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const $ = id => document.getElementById(id);
   const AUD = {}, AUDRAW = {};
-  const AUD_FILES = ['tele','reale','punti','re','amb','roar1','roar2','roar3','cheer1','cheer2','cheer3','kick1','kick2','splash','sea','title','win','lose','fuse','boom','sting','whistle','post','ohhh','save','buu','heart','lock','splat','kiss','thunder','horns','medieval'];
+  const AUD_FILES = ['nooo1','nooo2','rabbia1','rabbia2','risate1','risate2','tele','reale','punti','re','amb','roar1','roar2','roar3','cheer1','cheer2','cheer3','kick1','kick2','splash','sea','title','win','lose','fuse','boom','sting','whistle','post','ohhh','save','buu','heart','lock','splat','kiss','thunder','horns','medieval'];
   const FONT = '"Press Start 2P", monospace';
 
   /* ---------- immagini ---------- */
@@ -455,6 +503,7 @@
     },
     goal(){
       if (!ac() || muted) return; const t = AC.currentTime;
+      if (S.mp && mpCrowd('goal')) return;
       if (AUD.roar1){ play(pickOf(['roar1','roar2','roar3']), { vol: 1 }); claps(t + 2.2, 6, .3, .08); return; }
       noiseHit(t, { type:'bandpass', f:650, q:.45, vol:.55, a:.25, hold:1.8, rel:2.6 });
       noiseHit(t + .1, { type:'bandpass', f:1500, q:.6, vol:.2, a:.3, hold:1.4, rel:2.2 });
@@ -466,6 +515,7 @@
     },
     save(){
       if (!ac() || muted) return; const t = AC.currentTime;
+      if (S.mp && mpCrowd('save')) return;
       if (AUD.save){ play('save', { vol: 1 }); play('ohhh', { vol: .6, at: .25 }); return; }
       noiseHit(t, { type:'lowpass', f:450, q:1, vol:.45, a:.002, rel:.12 });
       voices(t + .08, 1.6, 'u', .14, 270, 190, 12);
@@ -473,6 +523,7 @@
     },
     post(){
       if (!ac() || muted) return; const t = AC.currentTime;
+      if (S.mp && mpCrowd('post')) return;
       if (AUD.post){ play('post', { vol: 1.1 }); play('ohhh', { vol: .9, at: .15 }); return; }
       [[523,1.3,.16],[1371,.9,.1],[2240,.6,.07],[3150,.4,.05],[4410,.25,.03]].forEach(([f, d, v]) => osc(t, { f, vol:v, a:.001, rel:d }));
       noiseHit(t, { type:'highpass', f:3000, q:.7, vol:.15, a:.001, rel:.05 });
@@ -480,6 +531,7 @@
     },
     out(){
       if (!ac() || muted) return; const t = AC.currentTime;
+      if (S.mp && mpCrowd('out')) return;
       if (AUD.ohhh){ play('ohhh', { vol: 1 }); return; }
       voices(t + .05, 1.8, 'o', .14, 300, 170, 12);
       noiseHit(t + .05, { type:'bandpass', f:450, q:.5, vol:.15, a:.3, hold:.4, rel:1.2 });
@@ -859,7 +911,7 @@
     const sf = S.game === 'sfida';
     $('bestLbl').textContent = sf ? 'VITTORIE' : 'RECORD'; $('sBest').textContent = sf ? BEST.sfida : BEST.leggenda;
   }
-  function hint(t, blink=true){ const h = $('hint'); h.textContent = t; h.classList.toggle('blink', blink && !reduceMotion); }
+  function hint(t, blink=true){ if (S.mp && /^TOCCA PER/.test(t)) t = ''; const h = $('hint'); h.textContent = t; h.classList.toggle('blink', blink && !reduceMotion); }
   function banner(t, sub='', kind=''){
     const g = $('tag'); g.textContent = t; g.className = 'tag ' + kind; void g.offsetWidth; if (!reduceMotion && kind !== 'grey') g.classList.add('pop');
     $('sub').innerHTML = sub || '&nbsp;';
@@ -914,7 +966,7 @@
     if (S.mode === 'back98'){ hideSubs(); next(); return; }
     ac();
     if (S.mode === 'aimX'){ S.lockU = S.u; S.mode = 'aimY'; S.t = 0; sfx.lock(); hint("TOCCA: SCEGLI L'ALTEZZA"); return; }
-    if (S.mode === 'aimY'){ sfx.lock(); shoot(S.lockU, S.v); return; }
+    if (S.mode === 'aimY'){ sfx.lock(); if (S.mp){ mpShooterChoose(S.lockU, S.v); return; } shoot(S.lockU, S.v); return; }
     // PARA: il tocco sceglie il punto del tuffo (prima del tiro o appena partito il pallone)
     if (S.role === 'para' && !S.pick && (S.mode === 'paraWait' || (S.mode === 'kick' && S.t < CT + FD))){
       let u = 0, v = .35;
@@ -1018,9 +1070,9 @@
     const r = s.res; const au = Math.abs(s.u), streak0 = S.streak || 0;
     S.tiri++;
     if (S.role === 'para'){ resolvePara(s, r, au); return; }
-    if (S.game === 'sfida') S.sf.mf.push(r === 'gol');
+    if (S.game === 'sfida') (S.mp && S.mp.shooter === 'av' ? S.sf.bar : S.sf.mf).push(r === 'gol');
     if (r === 'gol'){
-      S.gol++; S.celeb = 3.2; S.zoom = 1; sfx.goal(); confetti(); smokeBurst();
+      S.gol++; S.zoom = 1; sfx.goal(); if (!(S.mp && S.mp.shooter === 'av')){ S.celeb = 3.2; confetti(); smokeBurst(); }
       S.ripple = { x: s.bx, y: s.by, t: 0 };
       s.phys = { vx: s.u*30, vy: -20, g: 500, dr: -4, floor: Math.min(GLINE - 10, s.by + 40) };
       let t = 'GOL!', sub = pick(['palla da una parte, portiere dall\'altra','rete gonfia','lo stadio esplode','il bomber colpisce ancora']);
@@ -1109,6 +1161,7 @@
   }
 
   function next(){
+    if (S.mp) return;
     // Tasso Alcolico colpito: prima arriva il Re (anche se era l'ultimo rigore)
     if (S.egg && CS.P_atlas3 && CS.P_medbg){ if (CS.P_atlas4) startRoyalIn(); else startRoyal(); return; }
     if (verdict()){
@@ -1887,8 +1940,10 @@
   }
   function keeperPick(u, v){
     if (Math.abs(u) < .16) u = 0;
+    if (S.mp && S.mp.phase !== 'choose') return;
     S.kpick = { u, v, at: S.mode === 'kRun' ? S.t : 0 };
     sfx.lock(); hint('...', false);
+    if (S.mp) mpKeeperChoose(S.kpick);
   }
   // il portiere parte al calcio (se hai scelto prima) o quando tocchi
   const kDiveAt = () => S.kpick ? Math.max(KCT - .05, S.kpick.at) : 99;
@@ -1903,8 +1958,9 @@
       if (saved && touch <= 3 && au > .7 && s.v > .7 && Math.random() < .5) saved = false;
       r = saved ? 'parata' : 'gol';
     }
+    if (S.mp) r = S.mp.forced;
     s.res = r;
-    S.sf.bar.push(r === 'gol');
+    (S.mp && S.mp.shooter === 'mf' ? S.sf.mf : S.sf.bar).push(r === 'gol');
     if (r === 'gol'){
       sfx.out(); S.netHit = { x: kgx(s.u), y: kgy(Math.min(1, s.v)), t: 0 };
       s.phys = { vx: s.u*40, vy: 30, g: 0, dr: 90, fade: true };
@@ -2088,7 +2144,8 @@
 
   /* ---------- disegno ---------- */
   function spr(name, cx, bottom, scale, flipped=false){
-    const img = flipped ? FLIP[name] : (S.role === 'para' && RED[name]) ? RED[name] : IMG[name]; if (!img) return;
+    const kd = mpKind(name);
+    const img = kd ? mpVar(name, kd, flipped) : flipped ? FLIP[name] : (S.role === 'para' && RED[name]) ? RED[name] : IMG[name]; if (!img) return;
     const w = img.width*scale, h = img.height*scale;
     ctx.drawImage(img, Math.round(cx - w/2), Math.round(bottom - h), Math.round(w), Math.round(h));
   }
@@ -2108,10 +2165,10 @@
     if (S.game === 'sfida'){
       // SFIDA: gol veri delle due squadre
       const { a, b, na, nb } = sfState();
-      ctx.fillStyle = '#ffffff'; ctx.fillText('MF', 44, 52);
+      ctx.fillStyle = '#ffffff'; ctx.fillText(S.mp && S.mp.team === 'mf' ? 'TU' : 'MF', 44, 52);
       ctx.fillStyle = '#05081a'; ctx.fillRect(150, 22, 152, 56);
       ctx.fillStyle = '#ffd23f'; ctx.textAlign = 'center'; ctx.fillText(a + '-' + b, 226, 52);
-      ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.fillText('BAR', 318, 52);
+      ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.fillText(S.mp && S.mp.team === 'av' ? 'TU' : 'BAR', 318, 52);
       box(W - 270, 12, 262, 76);
       ctx.font = '14px ' + FONT; ctx.fillStyle = '#ffd23f'; ctx.fillText(na >= 5 && nb >= 5 ? 'OLTRANZA' : 'RIGORE', W - 248, 36);
       ctx.font = '28px ' + FONT; ctx.fillStyle = '#ffffff';
@@ -2371,7 +2428,7 @@
   function step(now){
     if (S.paused){ last = now; return; }
     // tasti di gioco: visibili durante la partita, nascosti nei menu e nelle scene finali (che non si saltano)
-    const showB = !['title','over','statua','outro','royal','royalIn','royalOut','back98'].includes(S.mode) && $('ovStart').hidden && $('ovEnd').hidden;
+    const showB = !['title','over','statua','outro','royal','royalIn','royalOut','back98'].includes(S.mode) && $('ovStart').hidden && $('ovEnd').hidden && !S.mp;
     if ($('gbtns').hidden === showB) $('gbtns').hidden = !showB;
     const showK = (S.mode === 'statua' || S.mode === 'royalIn' || (S.mode === 'royal' && !S.royalDone)) && S.t > .6;   // gag: si possono saltare
     if ($('skipBox').hidden === showK) $('skipBox').hidden = !showK;
@@ -2382,7 +2439,8 @@
     // ultimi due rigori: battito del cuore durante la mira
     if ((S.mode === 'aimX' || S.mode === 'aimY' || S.mode === 'kWait' || S.mode === 'kRun') && S.tense && time > (S.nextBeat || 0)){ sfx.heart(); S.nextBeat = time + .85; }
     // SFIDA: dopo l'indizio parte la rincorsa dell'ospite
-    if (S.mode === 'kWait' && S.t > 2.1){ S.mode = 'kRun'; S.t = 0; play('whistle', { vol: .55 }); if (S.tense) buzz(60); }
+    if (S.mode === 'kWait' && S.t > 2.1 && !S.mp){ S.mode = 'kRun'; S.t = 0; play('whistle', { vol: .55 }); if (S.tense) buzz(60); }
+    if (S.mp) mpTick();
     if (S.mode === 'aimY'){ const per = 1.3/aimFast(); const ph = (S.t/per) % 2; S.v = (ph < 1 ? ph : 2 - ph) * 1.18; }
     if (S.mode === 'result' && S.canNext && time - S.canNextAt > 2.5) next();
     if (S.mode === 'paraWait' && S.t > 1.4) cpuKick();
@@ -2422,6 +2480,7 @@
     ctx.restore();
     if (S.celeb > 0 && Math.sin(time*16) > .6){ ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(0, 0, W, H); }
     if (S.mode !== 'statua' && S.mode !== 'royal' && S.mode !== 'royalOut') scoreboard();
+    if (S.mp) mpOverlay();
     cloudDraw();
     if (S.flash > 0){ ctx.fillStyle = `rgba(255,255,255,${Math.min(1, S.flash)})`; ctx.fillRect(0, 0, W, H); S.flash -= dt*1.6; }
     drawBig(dt);
@@ -2433,7 +2492,7 @@
     const r = stage.getBoundingClientRect();
     const m = matchMedia('(orientation: landscape) and (max-height: 560px)').matches ? 0 : 6;
     const sc = Math.min((r.width - m) / W, (r.height - m) / H);
-    $('gbtns').style.fontSize = Math.max(6, W*sc*.0098).toFixed(1) + 'px';
+    $('gbtns').style.fontSize = $('mpBar').style.fontSize = Math.max(6, W*sc*.0098).toFixed(1) + 'px';
     cv.style.width = Math.floor(W*sc) + 'px'; cv.style.height = Math.floor(H*sc) + 'px';
   }
   new ResizeObserver(fit).observe(stage); fit();
@@ -2455,6 +2514,405 @@
   });
   // dal menu, scegliere una modalità chiude la partita lasciata in sospeso
   const dropSuspended = () => { if (S.suspended){ S.suspended = false; $('btnBackGame').hidden = true; leaveGame(); } };
+
+  /* ---------- SFIDA UN AMICO: due telefoni, stesso rigore, nello stesso istante ---------- */
+  // Il primo attaccante gioca per Manfredonia (biancazzurro, portiere rosa), l'altro per gli ospiti (biancorosso, portiere verde).
+  const MP = { net: null, opp: null, me: { e: 1 }, off: 0, offRtt: 1e9, pingN: 0, pingT: 0, lastPongFor: -1, code: null, mode: 'sfida', ping: null };
+  const wall = () => Date.now();
+  function mpPres(patch){ Object.assign(MP.me, patch); if (MP.net) MP.net.presence(patch); }
+  // collegamento: la "stanza" di Claude; in locale (prove) si usano due schede dello stesso browser
+  const FB_CONFIG = { apiKey: "AIzaSyALsBwTHM005KkGy_zb34NbsxcV2FR3i8o", authDomain: "quizshow-665a8.firebaseapp.com",
+    databaseURL: "https://quizshow-665a8-default-rtdb.europe-west1.firebasedatabase.app", projectId: "quizshow-665a8",
+    storageBucket: "quizshow-665a8.firebasestorage.app", messagingSenderId: "352008839128", appId: "1:352008839128:web:6f953972a44a8d764e1cad" };
+  // Firebase: ogni giocatore scrive il suo stato in rigori/<codice>/p/<id>; l'orologio del server allinea i due telefoni
+  function mpFirebase(code){
+    if (!window.firebase || !firebase.database) return null;
+    const app = firebase.apps.length ? firebase.app() : firebase.initializeApp(FB_CONFIG), db = firebase.database(app);
+    const id = Math.random().toString(36).slice(2, 10), base = db.ref('rigori/' + code + '/p'), me = base.child(id);
+    me.onDisconnect().remove();
+    db.ref('.info/serverTimeOffset').on('value', sn => { MP.mySOff = sn.val() || 0; MP.me.sOff = MP.mySOff; me.update({ sOff: MP.mySOff }).catch(() => {}); });
+    const TS = firebase.database.ServerValue ? firebase.database.ServerValue.TIMESTAMP : null;
+    const beat = () => me.update({ hb: TS || (wall() + (MP.mySOff || 0)) }).catch(() => {});
+    beat(); setInterval(beat, 2500);   // battito: chi non batte da 10 secondi è un fantasma
+    let cb = () => {};
+    base.on('value', sn => { const v = sn.val() || {}; cb(Object.keys(v).filter(k => k !== id).map(k => Object.assign({ peer: k }, v[k]))); });
+    return { kind: 'firebase', presence: p => { me.update(p).catch(() => {}); }, onPeers: f => { cb = f; } };
+  }
+  async function mpTransport(code){
+    // dentro Claude Firebase è bloccato: lì si usa la stanza di Claude; sul sito e nell'APK si usa Firebase
+    const inClaude = !!(window.claude && window.claude.use);
+    const fb = inClaude ? null : mpFirebase(code); if (fb) return fb;
+    let roomNs = null;
+    try { roomNs = window.claude && window.claude.use ? await window.claude.use('room') : null; } catch(e) { roomNs = null; }
+    if (roomNs){
+      const rm = await roomNs.join('rig98-' + code);
+      return { kind: 'room', presence: p => { rm.presence(p).catch(() => {}); },
+        onPeers: cb => rm.onPeers(ch => cb(ch.peers.filter(x => !x.sameTab && x.kind === 'viewer').map(x => Object.assign({ peer: x.peer }, x.presence)))) };
+    }
+    if (typeof BroadcastChannel === 'undefined') throw { code: 'offline' };
+    const id = Math.random().toString(36).slice(2), bc = new BroadcastChannel('rig98-' + code), peers = {}, mine = {}; let cb = () => {};
+    const emitAll = () => cb(Object.values(peers).filter(p => wall() - p.seen < 5000).map(p => Object.assign({ peer: p.id }, p.st)));
+    bc.onmessage = ev => { const m = ev.data; if (!m || m.id === id) return; peers[m.id] = { id: m.id, st: m.st, seen: wall() }; emitAll(); };
+    setInterval(() => bc.postMessage({ id, st: mine }), 1000);
+    return { kind: 'local', presence: p => { Object.keys(p).forEach(k => { if (p[k] === null) delete mine[k]; else mine[k] = p[k]; }); bc.postMessage({ id, st: mine }); }, onPeers: f => { cb = f; } };
+  }
+  async function mpEnter(code){
+    MP.code = code; $('mpCodeShow').hidden = false; $('mpCodeShow').textContent = code;
+    $('mpStatus').textContent = 'Mi collego alla partita ' + code + '…';
+    try { MP.net = await mpTransport(code); }
+    catch(e){ $('mpStatus').textContent = 'Non riesco a collegarmi (' + (e && e.code || 'errore') + '). Apri la pagina da claude.ai con il tuo account.'; return; }
+    MP.net.onPeers(mpOnPeers);
+    mpPres({ e: MP.me.e, pick: null, choice: null, go: null });
+    $('mpPick').hidden = false; mpLobby();
+  }
+  function mpOnPeers(list){
+    const srvNow = wall() + (MP.mySOff || 0);
+    const fresh = list.filter(p => p.hb == null || srvNow - p.hb < 10000);
+    fresh.sort((a, b) => ((mpValid(b) ? 1 : 0) - (mpValid(a) ? 1 : 0)) || ((b.hb || 0) - (a.hb || 0)) || (a.peer < b.peer ? -1 : 1));
+    const o = fresh[0] || null;
+    MP.opp = o;
+    if (o && o.ping && o.ping.id !== MP.lastPongFor){ MP.lastPongFor = o.ping.id; mpPres({ pong: { id: o.ping.id, t: wall() } }); }
+    if (o && o.pong && MP.ping && o.pong.id === MP.ping.id && !MP.ping.done){
+      MP.ping.done = true; const t1 = wall(), rtt = t1 - MP.ping.t, est = o.pong.t - (MP.ping.t + t1)/2;
+      const srv = o.sOff != null && MP.mySOff != null;
+      if (rtt < MP.offRtt){ MP.offRtt = rtt; if (!srv) MP.off = est; } else if (!srv && rtt < MP.offRtt*1.3) MP.off = MP.off*.7 + est*.3;
+    }
+    if (o && o.sOff != null && MP.mySOff != null) MP.off = MP.mySOff - o.sOff;   // scarto preciso dall'orologio di Firebase
+    // l'amico ha chiesto la rivincita: lo seguo
+    if (S.mp && S.mp.phase === 'end' && o && o.pick && o.pick.e > MP.me.e){ MP.me.e = o.pick.e; S.mp = null; S.mode = 'title'; $('ovMpEnd').hidden = true; mpPres({ e: MP.me.e, pick: null, choice: null, go: null }); }
+    if (S.mp && o) S.mp.lastSeen = wall();
+    if (S.mp && S.mp.phase !== 'end' && o && o.quit && o.quit.e === MP.me.e) mpEnd('abbandono');
+    mpLobby();
+  }
+  // misura continua del ritardo e dello scarto tra gli orologi dei due telefoni
+  setInterval(() => {
+    if (!MP.net || !MP.opp) return;
+    const iv = MP.pingN < 15 ? 600 : 3000; if (wall() - MP.pingT < iv) return;
+    MP.pingT = wall(); MP.pingN++; MP.ping = { id: MP.pingN, t: MP.pingT };
+    mpPres({ ping: { id: MP.pingN, t: MP.pingT } });
+  }, 200);
+  const mpValid = p => (p && p.pick && p.pick.e === MP.me.e) ? p.pick : null;
+  const roleW = r => r === 'tira' ? 'ATTACCANTE' : 'PORTIERE';
+  function mpSetMode(m){
+    MP.mode = m; $('mpSfida').classList.toggle('sel', m === 'sfida'); $('mpLeg').classList.toggle('sel', m === 'leggenda');
+    $('mpModeSt').textContent = m === 'sfida' ? 'Rigori alternati, 5 a testa poi oltranza' : 'Ruoli fissi: si tira a oltranza finché l\'attaccante non sbaglia';
+  }
+  function mpLobby(){
+    if (S.mp) return;
+    const o = MP.opp;
+    $('mpStatus').textContent = !MP.net ? 'Crea una partita e manda il codice al tuo amico, oppure scrivi il suo codice.'
+      : o ? 'Amico collegato ✓' + (MP.offRtt < 1e9 ? ' · ritardo ' + Math.round(MP.offRtt/2) + ' ms' : '')
+      : 'Manda il codice ' + MP.code + ' al tuo amico e aspetta che entri…';
+    const op = mpValid(o), mp = mpValid(MP.me);
+    $('mpTira').disabled = !o || !!(op && op.role === 'tira'); $('mpPara').disabled = !o || !!(op && op.role === 'para');
+    $('mpTira').classList.toggle('sel', !!mp && mp.role === 'tira'); $('mpPara').classList.toggle('sel', !!mp && mp.role === 'para');
+    $('mpSfida').disabled = $('mpLeg').disabled = !!(op || mp);
+    if (op) mpSetMode(op.mode);
+    // l'avversario ha scelto: prendo il ruolo libero e si parte
+    if (op && !mp){ mpPres({ pick: { role: op.role === 'tira' ? 'para' : 'tira', mode: op.mode, at: wall() + 1, e: MP.me.e } }); return mpLobby(); }
+    if (op && mp){
+      const first = mp.at < op.at;
+      let role = mp.role; if (role === op.role) role = first ? mp.role : (op.role === 'tira' ? 'para' : 'tira');
+      $('mpPickSt').textContent = 'Si parte! Tu sei ' + roleW(role);
+      mpStart(role, first ? mp.mode : op.mode); return;
+    }
+    $('mpPickSt').textContent = !o ? '' : op ? 'L\'amico ha scelto: ' + roleW(op.role) : mp ? 'Hai scelto: ' + roleW(mp.role) + ' · in attesa…' : 'Il primo che sceglie si prende il ruolo, l\'altro ha quello libero.';
+  }
+  function mpPickRole(role){
+    if (S.mp || !MP.opp) return;
+    const op = mpValid(MP.opp); if (op && op.role === role) return;
+    mpPres({ pick: { role, mode: op ? op.mode : MP.mode, at: wall(), e: MP.me.e } }); mpLobby();
+  }
+  function mpStart(role0, mode){
+    $('ovMp').hidden = true; $('ovStart').hidden = true;
+    S.mp = { mode, team: role0 === 'tira' ? 'mf' : 'av', r: 0, shooter: 'mf', keeper: 'av', phase: 'pre', leg: 1, pauses: 0, lastSeen: wall(), rage: 0 };
+    $('mpBar').hidden = false;
+    dropSuspended(); ac(); unlockVoice();
+    ready.then(() => {
+      startGame('sfida'); S.eggUsed = true; hideSubs(); S.mode = 'mpPre'; S.t = 0;
+      banner('SFIDA UN AMICO', S.mp.team === 'mf' ? 'tu sei Manfredonia' : 'tu sei la squadra ospite', 'gold');
+      hint(S.mp.team === 'mf' ? 'TU SEI MANFREDONIA' : 'TU SEI GLI OSPITI', false);
+      setTimeout(mpNext, 1800);
+    });
+  }
+  // fine della partita
+  function mpStreak(a){ const i = a.indexOf(false); return i < 0 ? a.length : i; }
+  function mpVerdict(){
+    const m = S.mp, sf = S.sf;
+    if (m.mode === 'sfida'){
+      const v = sfVerdict(); if (v) return v === 'vittoria' ? 'mf' : 'av';
+      return sf.mf.length >= 30 ? 'pari' : null;
+    }
+    return (sf.mf.includes(false) || sf.mf.length >= 50) ? 'serie' : null;
+  }
+  function mpNext(){
+    const m = S.mp; if (!m) return;
+    const v = mpVerdict(); if (v){ mpEnd(v); return; }
+    m.r++;
+    m.shooter = m.mode === 'sfida' ? (sfNext() === 'mf' ? 'mf' : 'av') : 'mf';
+    m.keeper = m.shooter === 'mf' ? 'av' : 'mf';
+    m.forced = null; m.goAt = 0; m.bothAt = 0; m.resend = 0; m.commented = false; m.deadline = wall() + 15000; m.phase = 'choose';
+    mpPres({ choice: null, go: null });
+    if (m.shooter === m.team) mpNewShot(); else mpNewKeeper();
+    if (m.shooter === 'mf') subtitle('Tocca a Manfredonia!', null, true); else subtitle('Tocca agli ospiti...', null, true);
+    if (m.legSwitch){ m.legSwitch = false; bigText('SI INVERTONO\nI RUOLI', '#ffd23f', 2.2); }
+  }
+  function mpNewShot(){
+    newShot(); hideSubs();
+    const n = (S.mp.shooter === 'mf' ? S.sf.mf : S.sf.bar).length + 1;
+    banner('TIRA!', 'rigore ' + n + (S.mp.shooter === 'mf' ? ' di Manfredonia' : ' degli ospiti'), 'grey');
+  }
+  function mpNewKeeper(){
+    S.lastRes = null; S.view = 'para'; S.mode = 'kWait'; S.t = 0; S.kpick = null; S.big = null; S.ripple = null; S.netHit = null; S.shot = null;
+    S.ks = { u: 0, v: .3, res: 'porta', done: false, bx: SPOT.x, by: SPOT.y, br: 9, phys: null };
+    S.tense = false; hideSubs();
+    hint('TOCCA LA PORTA DOVE TUFFARTI');
+    const n = (S.mp.shooter === 'mf' ? S.sf.mf : S.sf.bar).length + 1;
+    banner('PARA!', 'rigore ' + n + (S.mp.shooter === 'mf' ? ' di Manfredonia' : ' degli ospiti'), 'grey');
+  }
+  function mpShooterChoose(u0, v0){
+    const m = S.mp; if (m.phase !== 'choose') return;
+    const u = u0 + (Math.random() - .5)*.04, v = Math.max(.04, v0 + (Math.random() - .5)*.04);
+    m.phase = 'wait'; S.mode = 'mpWait'; S.t = 0;
+    mpPres({ choice: { e: MP.me.e, r: m.r, u, v } });
+    hint('IN ATTESA DELL\'AVVERSARIO…', false);
+  }
+  function mpKeeperChoose(p){
+    const m = S.mp; m.phase = 'wait';
+    mpPres({ choice: { e: MP.me.e, r: m.r, u: p.u, v: p.v } });
+    hint('IN ATTESA DELL\'AVVERSARIO…', false);
+  }
+  // un solo risultato, calcolato uguale sui due telefoni dalle due scelte (coordinate dell'attaccante)
+  function mpJudge(s, kp){
+    const au = Math.abs(s.u);
+    if (au > 1.03 || s.v > 1.04) return au > 1.03 ? 'fuori' : 'alto';
+    if (au > .96) return 'palo';
+    if (s.v > .96) return 'traversa';
+    if (au > .72 && s.v > .7) return 'gol';                         // sotto l'incrocio: imparabile
+    const ku = kp.u === 0 ? 0 : -kp.u, kv = kp.v;                    // il portiere vede tutto specchiato
+    if (ku === 0) return au < .22 && s.v < .75 ? 'parata' : 'gol';
+    return Math.sign(s.u) === Math.sign(ku) && Math.hypot(s.u - ku, (s.v - kv)*.8) < .32 ? 'parata' : 'gol';
+  }
+  function mpTick(){
+    const m = S.mp, t = wall();
+    if (m.phase === 'end') return;
+    if (t - m.lastSeen > 15000){ mpEnd('abbandono'); return; }
+    if (mpPauseTick()) return;
+    if (m.phase === 'play' && S.mode === 'result' && !m.commented){ m.commented = true; mpComment(); }
+    if (m.phase === 'choose' && t > m.deadline){
+      if (m.shooter === m.team) mpShooterChoose(S.mode === 'aimY' ? S.lockU : S.u * .6, S.mode === 'aimY' ? S.v : .3);
+      else keeperPick(0, .35);
+    }
+    if (m.phase === 'wait' && t - (m.resend || 0) > 3000){
+      m.resend = t; if (MP.me.choice) mpPres({ choice: MP.me.choice }); if (MP.me.go && MP.me.go.r === m.r) mpPres({ go: MP.me.go });
+    }
+    if (m.phase === 'wait' && MP.opp){
+      const oc = MP.opp.choice, mc = MP.me.choice, e = MP.me.e;
+      if (oc && mc && oc.e === e && oc.r === m.r && mc.r === m.r){
+        const iShoot = m.shooter === m.team, shot = iShoot ? mc : oc, kp = iShoot ? oc : mc;
+        if (iShoot && !(MP.me.go && MP.me.go.r === m.r && MP.me.go.e === e)) mpPres({ go: { e, r: m.r, at: t + 1300 } });
+        const og = MP.opp.go;
+        let at = iShoot ? MP.me.go.at : (og && og.e === e && og.r === m.r ? og.at - MP.off : 0);
+        if (!iShoot && at && (at > t + 2500 || at < t - 2000)) at = t + 300;   // orario assurdo: si parte subito
+        if (!m.bothAt) m.bothAt = t;
+        if (!at && t - m.bothAt > 8000) at = t + 200;                          // il via non arriva: si parte comunque
+        if (at){
+          m.shot = { u: shot.u, v: shot.v }; m.kp = { u: kp.u, v: kp.v }; m.forced = mpJudge(m.shot, m.kp);
+          m.goAt = at; m.phase = 'armed'; hint('', false);
+        }
+      }
+    }
+    // il contatto col pallone cade nello stesso istante nelle due viste
+    if (m.phase === 'armed' && t >= m.goAt + (m.shooter === m.team ? 80 : 0)){ m.phase = 'play'; mpAction(); }
+    if (m.phase === 'play' && t >= m.goAt + 5600){ m.phase = 'next'; hideSubs(); mpNext(); }
+  }
+  function mpAction(){
+    const m = S.mp, sh = m.shot, kp = m.kp, r = m.forced;
+    play('whistle', { vol: .55 });
+    if (m.shooter === 'av') booSfx();
+    if (m.shooter === m.team){
+      // vista dell'attaccante
+      let ku = kp.u === 0 ? 0 : -kp.u, kv = kp.v;
+      const saved = r === 'parata';
+      if (saved){ ku = Math.abs(sh.u) < .18 ? 0 : sh.u; kv = sh.v; }
+      else if (r === 'gol' && ku !== 0 && Math.abs(sh.u - ku) < .3) ku += (sh.u > ku ? -.28 : .28);
+      if (ku !== 0 && Math.abs(ku) < .12) ku = Math.sign(ku)*.12;
+      S.shot = { u: sh.u, v: sh.v, res: r, ku, kv, saved, diveAt: CT + .04, bx: BALL.x, by: BALL.y, br: BALL.r, phys: null, done: false };
+      S.mode = 'kick'; S.t = Math.max(0, (wall() - m.goAt - 80)/1000); hint('...', false);
+    } else {
+      // vista del portiere: destra e sinistra specchiate
+      const u = -sh.u, v = sh.v;
+      S.ks = { u, v, res: ['fuori','alto','palo','traversa'].includes(r) ? r : 'porta', done: false, bx: SPOT.x, by: SPOT.y, br: 9, phys: null };
+      const p = S.kpick || (S.kpick = { u: 0, v: .35, at: 0 });
+      if (r === 'parata' && p.u !== 0){ p.u = u; p.v = v; }
+      if (r === 'gol' && p.u !== 0 && Math.abs(u - p.u) < .3) p.u += (u > p.u ? -.28 : .28);
+      S.mode = 'kRun'; S.t = Math.max(0, (wall() - m.goAt)/1000);
+    }
+  }
+  function mpEnd(v){
+    const m = S.mp; if (!m || m.phase === 'end') return; m.phase = 'end'; S.mode = 'over'; hideSubs();
+    $('mpBar').hidden = true; $('ovMpPause').hidden = true; $('ovMpExit').hidden = true;
+    const ab = v === 'abbandono' || v === 'abbandono-io';
+    $('mpAgain').style.display = $('mpSwap').style.display = ab ? 'none' : '';
+    if (ab){
+      $('mpEndTitle').textContent = v === 'abbandono' ? 'HAI VINTO!' : 'HAI ABBANDONATO';
+      $('mpEndScore').textContent = v === 'abbandono' ? 'L\'AVVERSARIO HA LASCIATO' : 'PARTITA PERSA';
+      $('mpEndSub').textContent = '';
+      $('ovMpEnd').hidden = false; return;
+    }
+    if (m.mode === 'sfida') setTimeout(() => subtitle(v === 'mf' ? 'Vittoria! Manfredonia vince la sfida!' : 'Finisce così: passano gli ospiti.', null, true), 300);
+    const { a, b } = sfState();
+    if (v === 'serie'){
+      const n = mpStreak(S.sf.mf), last = S.sf.mf.length ? S.ks && S.mp.forced : null;
+      $('mpEndTitle').textContent = m.team === 'mf' ? 'FINE SERIE' : (m.forced === 'parata' ? 'L\'HAI PARATO!' : 'FINE SERIE');
+      $('mpEndScore').textContent = n === 1 ? '1 RIGORE SEGNATO' : n + ' RIGORI DI FILA';
+      $('mpEndSub').textContent = m.team === 'mf' ? 'Eri l\'attaccante' : 'Eri il portiere';
+    } else {
+      $('mpEndTitle').textContent = v === 'pari' ? 'PAREGGIO' : v === m.team ? 'HAI VINTO!' : 'HAI PERSO';
+      $('mpEndScore').textContent = 'MF ' + a + ' - ' + b + ' OSP';
+      $('mpEndSub').textContent = m.team === 'mf' ? 'Hai giocato con Manfredonia' : 'Hai giocato con la squadra ospite';
+    }
+    $('ovMpEnd').hidden = false; try { sfx.end(); } catch(e) {}
+  }
+  // divise: le stesse figure del gioco, ricolorate
+  const VAR = { red: {}, blue: {}, green: {}, pink: {}, ygreen: {} };
+  function mpKind(name){
+    const m = S.mp; if (!m) return null;
+    if (S.view === 'tira'){
+      if (m.shooter === 'av' && /^k/.test(name)) return 'red';
+      if (/^g/.test(name)) return m.keeper === 'mf' ? 'pink' : 'ygreen';   // il portiere giallo diventa rosa o verde
+    } else {
+      if (m.keeper === 'av' && /^pk_/.test(name)) return 'green';
+      if (m.shooter === 'mf' && /^ok_/.test(name)) return 'blue';
+    }
+    return null;
+  }
+  function recol(img, kind){
+    const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+    const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+    try {
+      const d = x.getImageData(0, 0, c.width, c.height), p = d.data;
+      for (let i = 0; i < p.length; i += 4){
+        if (p[i+3] < 10) continue;
+        const r = p[i], g = p[i+1], b = p[i+2], mx = Math.max(r, g, b), mn = Math.min(r, g, b), ch = mx - mn;
+        if (mx < 30 || ch < 25) continue;
+        let h; if (mx === r) h = ((g - b)/ch) % 6; else if (mx === g) h = (b - r)/ch + 2; else h = (r - g)/ch + 4;
+        h *= 60; if (h < 0) h += 360; const sat = ch/mx;
+        if (kind === 'red' && h >= 185 && h <= 265){ p[i] = mx; p[i+1] = Math.round(mn*.6); p[i+2] = Math.round(mn*.7); }
+        else if (kind === 'blue' && (h <= 14 || h >= 338) && sat > .4){ p[i] = Math.round(mn*.7); p[i+1] = Math.round(mn + ch*.55); p[i+2] = mx; }
+        else if (kind === 'green' && h >= 290 && h < 352 && sat > .3){ p[i] = mn; p[i+1] = mx; p[i+2] = Math.round(mn + ch*.35); }
+        else if (kind === 'pink' && h >= 30 && h <= 170 && sat > .3){ p[i] = mx; p[i+1] = Math.round(mn + ch*.25); p[i+2] = Math.round(mn + ch*.6); }
+        else if (kind === 'ygreen' && h >= 30 && h <= 75 && sat > .3){ p[i] = Math.round(mn + ch*.15); p[i+1] = mx; p[i+2] = Math.round(mn + ch*.35); }
+      }
+      x.putImageData(d, 0, 0);
+    } catch(e) { return img; }
+    return c;
+  }
+  function mpVar(name, kind, flipped){
+    const key = name + (flipped ? '|f' : '');
+    if (!VAR[kind][key]){ const base = IMG[name]; if (!base) return null; let c = recol(base, kind); if (flipped) c = flip(c); VAR[kind][key] = c; }
+    return VAR[kind][key];
+  }
+
+  /* ---------- v2: telecronista, pubblico, pausa, esci ---------- */
+  const MPL = {
+    mf: { gol: ['Gol!','Rete!','È dentro!','Gooool!','Che rigore!','Implacabile!','Palla in fondo al sacco!','La palla gonfia la rete!'],
+          parata: ['Parato!','Il portiere dice no!','Fermato!'], palo: ['Palo!','Legno!','Che sfortuna!'], traversa: ['Traversa!','Il legno trema!'],
+          fuori: ['Fuori!','Che errore!','Per un soffio!','Ha mirato a un gabbiano?'], alto: ['Alto!','In tribuna!','Che errore!'] },
+    av: { gol: ['Gol degli ospiti.','Rete ospite.','Lo mettono dentro.'], parata: ['Che parata!','Miracolo!','Saracinesca!','Parata!'],
+          palo: ['Ti salva il legno!','Palo!'], traversa: ['Ti salva il legno!','Traversa!'], fuori: ['Sbagliato!','Fuori!','In tribuna!'], alto: ['Alto!','In tribuna!','Sbagliato!'] }
+  };
+  function mpComment(){
+    const m = S.mp, r = m.forced, sh = m.shooter, miss = r !== 'gol';
+    subtitle(pickOf(MPL[sh][r] || MPL[sh].fuori), null, true);
+    if (sh === 'mf') banner(miss ? 'NOOO!' : 'GOL!', miss ? 'Manfredonia sbaglia' : 'Manfredonia segna', miss ? 'grey' : 'gold');
+    else banner(miss ? 'SBAGLIATO!' : 'GOL OSPITE', miss ? 'la curva se la ride' : 'la curva non ci sta', miss ? 'gold' : 'grey');
+    if (sh === 'av' && !miss) m.rage = time;
+  }
+  // il pubblico tifa Manfredonia, chiunque tu sia
+  function mpCrowd(kind){
+    const sh = S.mp.shooter;
+    if (sh === 'mf'){
+      if (kind === 'goal') return false;
+      if (kind === 'save') play('save', { vol: 1 }); else if (kind === 'post') play('post', { vol: 1.1 });
+      play(pickOf(['nooo1','nooo2']), { vol: 1, at: .1 }); return true;
+    }
+    if (kind === 'goal'){ play(pickOf(['rabbia1','rabbia2']), { vol: 1 }); return true; }
+    if (kind === 'save') play('save', { vol: 1 }); else if (kind === 'post') play('post', { vol: 1.1 });
+    play(pickOf(['risate1','risate2']), { vol: 1, at: .1 }); play(pickOf(['cheer1','cheer2','cheer3']), { vol: .45, at: .6 }); return true;
+  }
+  // nuvolette di rabbia sopra la curva quando segnano gli ospiti
+  function mpOverlay(){
+    const m = S.mp; if (!m || !m.rage) return;
+    const t = time - m.rage; if (t > 3.2){ m.rage = 0; return; }
+    const B = [[.0, 205, 300, '#@!%&!', false], [.35, 1051, 300, '$%#@!!', true], [.8, 430, 250, '@#&%$!', false], [1.2, 830, 250, '%&#@!?!', true], [1.7, 300, 330, '#!@%&$!', false], [2.1, 960, 330, '#@!%!', true]];
+    B.forEach(([t0, x, y, txt, fl]) => {
+      if (t < t0 || t > t0 + 1.2) return;
+      const pop = Math.min(1, (t - t0)*8);
+      ap('b2', x, y + 96*pop, pop, fl);
+      if (pop < 1) return;
+      ctx.save(); ctx.textAlign = 'center'; ctx.font = '24px ' + FONT; ctx.fillStyle = '#b0121c';
+      ctx.fillText(txt, x + (fl ? 8 : -8), y + 12); ctx.restore();
+    });
+  }
+  // pausa: max 25 secondi, vale per tutti e due; 2 a testa per partita
+  function mpPauseState(){
+    const m = S.mp, e = MP.me.e, t = wall();
+    const cand = [];
+    if (MP.me.pause && MP.me.pause.e === e && MP.me.pause.r === m.r) cand.push({ by: 'me', at: MP.me.pause.at });
+    if (MP.opp && MP.opp.pause && MP.opp.pause.e === e && MP.opp.pause.r === m.r) cand.push({ by: 'opp', at: MP.opp.pause.at - MP.off });
+    const live = cand.filter(c => t - c.at < 25000).sort((a, b) => a.at - b.at)[0];
+    return live || null;
+  }
+  function mpPausePress(){
+    const m = S.mp; if (!m || !['choose','wait'].includes(m.phase) || mpPauseState()) return;
+    if ((m.pauses || 0) >= 2){ hint('PAUSE FINITE', false); return; }
+    m.pauses = (m.pauses || 0) + 1;
+    mpPres({ pause: { e: MP.me.e, r: m.r, at: wall() } });
+  }
+  function mpPauseTick(){
+    const m = S.mp, p = mpPauseState(), on = !!p && ['choose','wait'].includes(m.phase);
+    if (on){
+      const left = Math.max(0, Math.ceil((25000 - (wall() - p.at))/1000));
+      $('mpPauseT').textContent = left;
+      $('mpPauseWho').textContent = p.by === 'me' ? 'Hai messo in pausa (' + (2 - (m.pauses || 0)) + ' rimaste)' : 'Il tuo amico ha messo in pausa';
+      $('mpResume').style.display = p.by === 'me' ? '' : 'none';
+      m.deadline = Math.max(m.deadline, wall() + 8000);
+    } else if (MP.me.pause && m.wasPaused){ mpPres({ pause: null }); }
+    if ($('ovMpPause').hidden === on) $('ovMpPause').hidden = !on;
+    m.wasPaused = on; return on;
+  }
+  function mpQuit(){
+    $('ovMpExit').hidden = true;
+    const m = S.mp; if (!m || m.phase === 'end') return;
+    mpPres({ quit: { e: MP.me.e } });
+    mpEnd('abbandono-io');
+  }
+  $('mpPauseB').addEventListener('click', e => { e.stopPropagation(); mpPausePress(); });
+  $('mpResume').addEventListener('click', () => mpPres({ pause: null }));
+  $('mpExitB').addEventListener('click', e => { e.stopPropagation(); if (S.mp && S.mp.phase !== 'end') $('ovMpExit').hidden = false; });
+  $('mpExitYes').addEventListener('click', mpQuit);
+  $('mpExitNo').addEventListener('click', () => { $('ovMpExit').hidden = true; });
+  // pulsanti
+  $('btnAmico').addEventListener('click', () => { $('ovStart').hidden = true; $('ovMp').hidden = false; mpSetMode(MP.mode); mpLobby(); });
+  $('mpBack').addEventListener('click', () => { $('ovMp').hidden = true; $('ovStart').hidden = false; });
+  $('mpCreate').addEventListener('click', () => { if (!MP.net) mpEnter(String(1000 + Math.floor(Math.random()*9000))); });
+  $('mpJoin').addEventListener('click', () => { const c = ($('mpCode').value || '').replace(/\D/g, ''); if (MP.net) return; if (c.length === 4) mpEnter(c); else $('mpStatus').textContent = 'Scrivi le 4 cifre del codice.'; });
+  $('mpSfida').addEventListener('click', () => { if (!mpValid(MP.me)) mpSetMode('sfida'); });
+  $('mpLeg').addEventListener('click', () => { if (!mpValid(MP.me)) mpSetMode('leggenda'); });
+  $('mpTira').addEventListener('click', () => mpPickRole('tira'));
+  $('mpPara').addEventListener('click', () => mpPickRole('para'));
+  function mpRematch(swap){
+    const m = S.mp; if (!m) return;
+    const mine = m.team === 'mf' ? 'tira' : 'para', role = swap ? (mine === 'tira' ? 'para' : 'tira') : mine, mode = m.mode;
+    const oe = (MP.opp && MP.opp.e) || 0; MP.me.e = Math.max(MP.me.e + 1, oe);
+    S.mp = null; S.mode = 'title'; $('ovMpEnd').hidden = true;
+    mpPres({ e: MP.me.e, pick: { role, mode, at: wall(), e: MP.me.e }, choice: null, go: null });
+    $('ovMp').hidden = false; $('mpPick').hidden = false; mpSetMode(mode); mpLobby();
+  }
+  $('mpAgain').addEventListener('click', () => mpRematch(false));
+  $('mpSwap').addEventListener('click', () => mpRematch(true));
+  $('mpMenu').addEventListener('click', () => { if (S.mp && S.mp.phase !== 'end') return; S.mp = null; S.mode = 'title'; $('ovMpEnd').hidden = true; $('ovStart').hidden = false; });
   $('btnSfida').addEventListener('click', () => { dropSuspended(); ac(); unlockVoice(); ready.then(() => startGame('sfida')); });
   $('btnLeggenda').addEventListener('click', () => { dropSuspended(); ac(); unlockVoice(); ready.then(() => startGame('leggenda')); });
   $('btnAgain').addEventListener('click', () => { ac(); startGame(S.game); });
