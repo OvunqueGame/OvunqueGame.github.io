@@ -2673,7 +2673,7 @@
     $('ovMp').hidden = true; $('ovStart').hidden = true;
     S.mp = { mode, team: role0 === 'tira' ? 'mf' : 'av', r: 0, shooter: 'mf', keeper: 'av', phase: 'pre', leg: 1, pauses: 0, lastSeen: wall(), rage: 0 };
     $('mpBar').hidden = false;
-    if (S.mp.team === 'mf') STATS.hit('sfide_amici');   // una volta per partita
+    if (S.mp.team === 'mf') STATS.hit(MP.online ? 'sfide_online' : mode === 'sfida' ? 'private_sfida' : 'private_leggenda');   // una volta per partita
     dropSuspended(); ac(); unlockVoice();
     ready.then(() => {
       startGame('sfida'); S.eggUsed = true; hideSubs(); S.mode = 'mpPre'; S.t = 0;
@@ -2970,7 +2970,7 @@
       if (!STATS.read){ $('stBody').textContent = 'Le statistiche si vedono solo dall\'app e dal sito.'; return; }
       STATS.read((v, err) => {
         if (!v){ $('stBody').textContent = 'Non riesco a leggere i numeri (' + (err && err.code || 'errore') + '). Controlla le regole di Firebase.'; return; }
-        const rows = [['aperture','Aperture'],['dispositivi_diversi','Dispositivi diversi'],['partite_sfida','Partite Sfida'],['partite_leggenda','Partite Leggenda'],['sfide_amici','Sfide tra amici']];
+        const rows = [['aperture','Aperture'],['dispositivi_diversi','Dispositivi diversi'],['partite_sfida','Sfida (CPU)'],['partite_leggenda','Leggenda (CPU)'],['ingressi_sala','Ingressi in sala'],['sfide_online','Sfide online'],['private_sfida','Privata Sfida'],['private_leggenda','Privata Leggenda']];
         const a = v.app || {}, b = v.sito || {};
         $('stBody').innerHTML = '<table><tr><th></th><th>APP</th><th>SITO</th></tr>' + rows.map(([k, l]) => '<tr><td>' + l + '</td><td>' + (a[k] || 0) + '</td><td>' + (b[k] || 0) + '</td></tr>').join('') + '</table>';
       });
@@ -3006,7 +3006,7 @@
       db.ref('classifica').orderByChild('v').limitToLast(10).on('value', sn => { SALA.rank = sn.val() || {}; salaRender(); });
       db.ref('inviti/' + SALA.id).on('value', sn => salaIncoming(sn.val() || {}));
     }
-    SALA.here = true; MP.online = true;
+    SALA.here = true; MP.online = true; STATS.hit('ingressi_sala');
     SALA.ref.set({ nick, stato: 'libero', hb: TSV() }).catch(() => {});
     $('ovMp').hidden = true; $('ovSala').hidden = false; $('salaInfo').textContent = 'Tocca SFIDA accanto a un nome per sfidarlo.'; salaRender();
   }
