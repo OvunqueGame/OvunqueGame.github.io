@@ -57,6 +57,11 @@
   .btn.blue{background:#1d4fd0}
   .mpbox{display:flex;flex-direction:column;gap:10px;align-items:center;max-width:520px;width:100%}
   .mpbox .btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .stbox{font-size:clamp(8px,2.2vw,12px);line-height:2;overflow-x:auto;max-width:100%}
+  .stbox table{border-collapse:collapse;margin:0 auto}
+  .stbox td,.stbox th{padding:2px 10px;text-align:right;font-variant-numeric:tabular-nums}
+  .stbox td:first-child,.stbox th:first-child{text-align:left}
+  .stbox th{color:var(--yellow);font-weight:400}
   .btn.sel{outline:4px solid var(--yellow);outline-offset:2px}
   .btn:disabled{opacity:.35;cursor:not-allowed}
   #mpCode{font:inherit;font-size:16px;width:7em;text-align:center;letter-spacing:4px;padding:10px;background:#05081a;color:var(--yellow);border:3px solid #fff}
@@ -221,6 +226,11 @@
         <p id="mpPauseWho"></p>
         <div class="btns"><button class="btn gold" id="mpResume" type="button">RIPRENDI</button></div>
       </div>
+      <div class="overlay" id="ovStats" hidden>
+        <h1>STATISTICHE</h1>
+        <div class="stbox" id="stBody">Carico…</div>
+        <div class="btns"><button class="btn blue" id="stClose" type="button">CHIUDI</button></div>
+      </div>
       <div class="overlay" id="ovMpExit" hidden>
         <h1>VUOI USCIRE?</h1>
         <p>Se esci perdi la partita e vince il tuo amico.</p>
@@ -235,7 +245,7 @@
         </div>
       </div>
       <div class="overlay" id="ovStart">
-        <h1>SCEGLI LA MODALITÀ</h1>
+        <h1 id="startTitle">SCEGLI LA MODALITÀ</h1>
         <button class="btn gold" id="btnBackGame" type="button" hidden>▶ TORNA ALLA PARTITA</button>
         <div class="modes">
           <button class="mode" id="btnSfida" type="button" disabled><b>SFIDA</b><span>Rigori alternati: un rigore lo tiri, uno lo pari. 5 a testa, poi oltranza.</span></button>
@@ -943,6 +953,7 @@
     }
   }
   function startGame(game){
+    if (!S.mp) STATS.hit(game === 'sfida' ? 'partite_sfida' : 'partite_leggenda');
     S.egg = false; S.eggUsed = false; S.bannerHit = 0; S.flash = 0;
     S.game = game || S.game || 'leggenda'; S.role = 'tira'; S.view = 'tira';
     S.sf = { mf: [], bar: [] }; S.ks = null; S.kpick = null; S.netHit = null;
@@ -2627,6 +2638,7 @@
     $('ovMp').hidden = true; $('ovStart').hidden = true;
     S.mp = { mode, team: role0 === 'tira' ? 'mf' : 'av', r: 0, shooter: 'mf', keeper: 'av', phase: 'pre', leg: 1, pauses: 0, lastSeen: wall(), rage: 0 };
     $('mpBar').hidden = false;
+    if (S.mp.team === 'mf') STATS.hit('sfide_amici');   // una volta per partita
     dropSuspended(); ac(); unlockVoice();
     ready.then(() => {
       startGame('sfida'); S.eggUsed = true; hideSubs(); S.mode = 'mpPre'; S.t = 0;
@@ -2893,6 +2905,42 @@
   $('mpExitB').addEventListener('click', e => { e.stopPropagation(); if (S.mp && S.mp.phase !== 'end') $('ovMpExit').hidden = false; });
   $('mpExitYes').addEventListener('click', mpQuit);
   $('mpExitNo').addEventListener('click', () => { $('ovMpExit').hidden = true; });
+  /* ---------- contatore: quante volte si gioca (solo app e sito, non dentro Claude) ---------- */
+  var STATS = (() => {
+    const none = { hit(){} };
+    try {
+      if ((window.claude && window.claude.use) || !window.firebase || !firebase.database) return none;
+      if (!window.firebase) return none;
+      const where = location.host === 'appassets.local' ? 'app' : /github\.io$/.test(location.host) ? 'sito' : null;
+      if (!where) return none;
+      const app = firebase.apps.length ? firebase.app() : firebase.initializeApp(FB_CONFIG), db = firebase.database(app);
+      const inc = () => firebase.database.ServerValue.increment(1);
+      const hit = k => { try { db.ref('stats/' + where + '/' + k).set(inc()).catch(() => {}); } catch(e) {} };
+      hit('aperture');
+      let id = null; try { id = localStorage.getItem('mf98Dev'); } catch(e) {}
+      if (!id){ id = Math.random().toString(36).slice(2, 12); try { localStorage.setItem('mf98Dev', id); } catch(e) {}
+        hit('dispositivi_diversi'); }
+      const read = cb => db.ref('stats').once('value').then(sn => cb(sn.val() || {})).catch(e => cb(null, e));
+      return { hit, read };
+    } catch(e) { return none; }
+  })();
+  // schermata segreta: 8 tocchi sul titolo del menu
+  (() => {
+    let taps = [];
+    $('startTitle').addEventListener('click', () => {
+      const t = wall(); taps = taps.filter(x => t - x < 4000); taps.push(t);
+      if (taps.length < 8) return; taps = [];
+      $('ovStart').hidden = true; $('ovStats').hidden = false; $('stBody').textContent = 'Carico…';
+      if (!STATS.read){ $('stBody').textContent = 'Le statistiche si vedono solo dall\'app e dal sito.'; return; }
+      STATS.read((v, err) => {
+        if (!v){ $('stBody').textContent = 'Non riesco a leggere i numeri (' + (err && err.code || 'errore') + '). Controlla le regole di Firebase.'; return; }
+        const rows = [['aperture','Aperture'],['dispositivi_diversi','Dispositivi diversi'],['partite_sfida','Partite Sfida'],['partite_leggenda','Partite Leggenda'],['sfide_amici','Sfide tra amici']];
+        const a = v.app || {}, b = v.sito || {};
+        $('stBody').innerHTML = '<table><tr><th></th><th>APP</th><th>SITO</th></tr>' + rows.map(([k, l]) => '<tr><td>' + l + '</td><td>' + (a[k] || 0) + '</td><td>' + (b[k] || 0) + '</td></tr>').join('') + '</table>';
+      });
+    });
+    $('stClose').addEventListener('click', () => { $('ovStats').hidden = true; $('ovStart').hidden = false; });
+  })();
   // pulsanti
   $('btnAmico').addEventListener('click', () => { $('ovStart').hidden = true; $('ovMp').hidden = false; mpSetMode(MP.mode); mpLobby(); });
   $('mpBack').addEventListener('click', () => { $('ovMp').hidden = true; $('ovStart').hidden = false; });
