@@ -57,6 +57,14 @@
   .btn.blue{background:#1d4fd0}
   .mpbox{display:flex;flex-direction:column;gap:10px;align-items:center;max-width:520px;width:100%}
   .mpbox .btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  #salaNick{font:inherit;font-size:13px;width:15em;max-width:70vw;text-align:center;padding:10px;background:#05081a;color:var(--yellow);border:3px solid #fff}
+  .salagrid{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;width:100%;max-width:820px}
+  .salagrid>div{flex:1 1 260px;min-width:0;background:rgba(5,8,26,.75);border:3px solid #2b4680;padding:10px}
+  .salagrid h2{font-size:clamp(9px,2.2vw,12px);color:var(--yellow);margin:0 0 8px;font-weight:400}
+  .salarow{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:clamp(8px,2vw,11px);padding:4px 0;border-bottom:1px solid #1d2c55}
+  .salarow .st{color:#9fb3d9}
+  .salarow button{font:inherit;font-size:inherit;padding:6px 10px;background:var(--yellow);color:#05081a;border:0;cursor:pointer}
+  .salarow button:disabled{opacity:.35;cursor:not-allowed}
   .stbox{font-size:clamp(8px,2.2vw,12px);line-height:2;overflow-x:auto;max-width:100%}
   .stbox table{border-collapse:collapse;margin:0 auto}
   .stbox td,.stbox th{padding:2px 10px;text-align:right;font-variant-numeric:tabular-nums}
@@ -64,7 +72,7 @@
   .stbox th{color:var(--yellow);font-weight:400}
   .btn.sel{outline:4px solid var(--yellow);outline-offset:2px}
   .btn:disabled{opacity:.35;cursor:not-allowed}
-  #mpCode{font:inherit;font-size:16px;width:7em;text-align:center;letter-spacing:4px;padding:10px;background:#05081a;color:var(--yellow);border:3px solid #fff}
+  #mpCode{font:inherit;font-size:16px;width:9em;text-align:center;letter-spacing:4px;padding:10px;background:#05081a;color:var(--yellow);border:3px solid #fff}
   .mpcode{font-size:clamp(20px,6vw,34px);color:var(--yellow);letter-spacing:8px}
   .mpst{font-size:clamp(8px,2vw,11px);line-height:1.9;text-align:center;margin:0}
 
@@ -226,6 +234,22 @@
         <p id="mpPauseWho"></p>
         <div class="btns"><button class="btn gold" id="mpResume" type="button">RIPRENDI</button></div>
       </div>
+      <div class="overlay" id="ovSala" hidden>
+        <h1>SALA ONLINE</h1>
+        <p class="mpst" id="salaHead"></p>
+        <div class="salagrid">
+          <div><h2>IN SALA ADESSO</h2><div id="salaList"></div></div>
+          <div><h2>CLASSIFICA</h2><div id="salaRank"></div></div>
+        </div>
+        <p class="mpst" id="salaInfo"></p>
+        <div class="btns"><button class="btn blue" id="salaExit" type="button">ESCI DALLA SALA</button></div>
+      </div>
+      <div class="overlay" id="ovInvite" hidden>
+        <h1 id="invTitle">SFIDA!</h1>
+        <div class="big" id="invT">20</div>
+        <p id="invSub"></p>
+        <div class="btns"><button class="btn gold" id="invYes" type="button">ACCETTA</button><button class="btn blue" id="invNo" type="button">RIFIUTA</button></div>
+      </div>
       <div class="overlay" id="ovStats" hidden>
         <h1>STATISTICHE</h1>
         <div class="stbox" id="stBody">Carico…</div>
@@ -249,8 +273,9 @@
         <button class="btn gold" id="btnBackGame" type="button" hidden>▶ TORNA ALLA PARTITA</button>
         <div class="modes">
           <button class="mode" id="btnSfida" type="button" disabled><b>SFIDA</b><span>Rigori alternati: un rigore lo tiri, uno lo pari. 5 a testa, poi oltranza.</span></button>
-          <button class="mode" id="btnAmico" type="button"><b>SFIDA UN AMICO</b><span>Due telefoni: uno tira, l'altro para. Stesso rigore, nello stesso istante.</span></button>
           <button class="mode" id="btnLeggenda" type="button" disabled><b>LEGGENDA DEL MIRAMARE</b><span>Solo tiri, a oltranza e sempre più veloci: al primo errore è finita.</span></button>
+          <button class="mode" id="btnOnline" type="button"><b>SFIDA ONLINE</b><span>Entra in sala e sfida chi è collegato adesso.</span></button>
+          <button class="mode" id="btnAmico" type="button"><b>PARTITA PRIVATA</b><span>Crea un codice e giocate solo tu e un amico.</span></button>
         </div>
         <div class="audsel" role="radiogroup" aria-label="Audio"><span>AUDIO</span>
           <button type="button" role="radio" data-aud="tele">TELECRONACA</button>
@@ -265,13 +290,20 @@
         <div class="rotate" aria-hidden="false"><span class="phone"></span><span>Ruota il telefono in orizzontale per giocare meglio</span></div>
       </div>
       <div class="overlay" id="ovMp" hidden>
-        <h1>SFIDA UN AMICO</h1>
+        <h1 id="mpH1">PARTITA PRIVATA</h1>
         <div class="mpbox">
-          <div class="btns"><button class="btn gold" id="mpCreate" type="button">CREA PARTITA</button></div>
-          <div class="btns"><input id="mpCode" inputmode="numeric" maxlength="4" placeholder="CODICE" aria-label="Codice partita"><button class="btn blue" id="mpJoin" type="button">ENTRA</button></div>
-          <div class="mpcode" id="mpCodeShow" hidden></div>
+          <div class="mpbox" id="mpOnSec">
+            <p class="mpst">Scegli un soprannome ed entra in sala: vedrai chi è collegato e potrai sfidarlo.</p>
+            <div class="btns"><input id="salaNick" maxlength="16" placeholder="IL TUO NOME" aria-label="Soprannome"><button class="btn gold" id="salaGo" type="button">ENTRA IN SALA</button></div>
+            <p class="mpst" id="salaMsg"></p>
+          </div>
+          <div class="mpbox" id="mpPrivSec">
+            <div class="btns"><button class="btn gold" id="mpCreate" type="button">CREA PARTITA</button></div>
+            <div class="btns"><input id="mpCode" inputmode="numeric" maxlength="4" placeholder="CODICE" aria-label="Codice partita"><button class="btn blue" id="mpJoin" type="button">ENTRA</button></div>
+            <div class="mpcode" id="mpCodeShow" hidden></div>
+          </div>
           <p class="mpst" id="mpStatus">Crea una partita e manda il codice al tuo amico, oppure scrivi il suo codice.</p>
-          <div class="mpbox" id="mpPick" hidden>
+          <div class="mpbox" id="mpPick" style="display:none">
             <div class="btns"><button class="btn" id="mpSfida" type="button">SFIDA</button><button class="btn" id="mpLeg" type="button">LEGGENDA</button></div>
             <p class="mpst" id="mpModeSt"></p>
             <div class="btns"><button class="btn" id="mpTira" type="button">ATTACCANTE</button><button class="btn" id="mpPara" type="button">PORTIERE</button></div>
@@ -2544,10 +2576,11 @@
     db.ref('.info/serverTimeOffset').on('value', sn => { MP.mySOff = sn.val() || 0; MP.me.sOff = MP.mySOff; me.update({ sOff: MP.mySOff }).catch(() => {}); });
     const TS = firebase.database.ServerValue ? firebase.database.ServerValue.TIMESTAMP : null;
     const beat = () => me.update({ hb: TS || (wall() + (MP.mySOff || 0)) }).catch(() => {});
-    beat(); setInterval(beat, 2500);   // battito: chi non batte da 10 secondi è un fantasma
+    beat(); const beatT = setInterval(beat, 2500);   // battito: chi non batte da 10 secondi è un fantasma
     let cb = () => {};
     base.on('value', sn => { const v = sn.val() || {}; cb(Object.keys(v).filter(k => k !== id).map(k => Object.assign({ peer: k }, v[k]))); });
-    return { kind: 'firebase', presence: p => { me.update(p).catch(() => {}); }, onPeers: f => { cb = f; } };
+    return { kind: 'firebase', presence: p => { me.update(p).catch(() => {}); }, onPeers: f => { cb = f; },
+      leave(){ clearInterval(beatT); base.off(); me.remove().catch(() => {}); cb = () => {}; } };
   }
   async function mpTransport(code){
     // dentro Claude Firebase è bloccato: lì si usa la stanza di Claude; sul sito e nell'APK si usa Firebase
@@ -2568,13 +2601,14 @@
     return { kind: 'local', presence: p => { Object.keys(p).forEach(k => { if (p[k] === null) delete mine[k]; else mine[k] = p[k]; }); bc.postMessage({ id, st: mine }); }, onPeers: f => { cb = f; } };
   }
   async function mpEnter(code){
+    if (MP.net){ try { MP.net.leave && MP.net.leave(); } catch(e) {} MP.net = null; MP.opp = null; MP.me = { e: 1 }; MP.offRtt = 1e9; MP.off = 0; MP.pingN = 0; MP.ping = null; }
     MP.code = code; $('mpCodeShow').hidden = false; $('mpCodeShow').textContent = code;
     $('mpStatus').textContent = 'Mi collego alla partita ' + code + '…';
     try { MP.net = await mpTransport(code); }
     catch(e){ $('mpStatus').textContent = 'Non riesco a collegarmi (' + (e && e.code || 'errore') + '). Apri la pagina da claude.ai con il tuo account.'; return; }
     MP.net.onPeers(mpOnPeers);
     mpPres({ e: MP.me.e, pick: null, choice: null, go: null });
-    $('mpPick').hidden = false; mpLobby();
+    $('mpPick').style.display = ''; mpLobby();
   }
   function mpOnPeers(list){
     const srvNow = wall() + (MP.mySOff || 0);
@@ -2611,7 +2645,7 @@
   function mpLobby(){
     if (S.mp) return;
     const o = MP.opp;
-    $('mpStatus').textContent = !MP.net ? 'Crea una partita e manda il codice al tuo amico, oppure scrivi il suo codice.'
+    $('mpStatus').textContent = !MP.net ? ($('mpPrivSec').style.display === 'none' ? '' : 'Crea una partita e manda il codice al tuo amico, oppure scrivi il suo codice.')
       : o ? 'Amico collegato ✓' + (MP.offRtt < 1e9 ? ' · ritardo ' + Math.round(MP.offRtt/2) + ' ms' : '')
       : 'Manda il codice ' + MP.code + ' al tuo amico e aspetta che entri…';
     const op = mpValid(o), mp = mpValid(MP.me);
@@ -2619,6 +2653,7 @@
     $('mpTira').classList.toggle('sel', !!mp && mp.role === 'tira'); $('mpPara').classList.toggle('sel', !!mp && mp.role === 'para');
     $('mpSfida').disabled = $('mpLeg').disabled = !!(op || mp);
     if (op) mpSetMode(op.mode);
+    if (MP.autoRole === 'tira' && o && !op && !mp){ MP.autoRole = null; MP.mode = 'sfida'; mpPres({ pick: { role: 'tira', mode: 'sfida', at: wall(), e: MP.me.e } }); return mpLobby(); }
     // l'avversario ha scelto: prendo il ruolo libero e si parte
     if (op && !mp){ mpPres({ pick: { role: op.role === 'tira' ? 'para' : 'tira', mode: op.mode, at: wall() + 1, e: MP.me.e } }); return mpLobby(); }
     if (op && mp){
@@ -2765,6 +2800,7 @@
     const m = S.mp; if (!m || m.phase === 'end') return; m.phase = 'end'; S.mode = 'over'; hideSubs();
     $('mpBar').hidden = true; $('ovMpPause').hidden = true; $('ovMpExit').hidden = true;
     const ab = v === 'abbandono' || v === 'abbandono-io';
+    if (MP.online) salaResult(v === 'abbandono' || v === m.team);
     $('mpAgain').style.display = $('mpSwap').style.display = ab ? 'none' : '';
     if (ab){
       $('mpEndTitle').textContent = v === 'abbandono' ? 'HAI VINTO!' : 'HAI ABBANDONATO';
@@ -2941,8 +2977,142 @@
     });
     $('stClose').addEventListener('click', () => { $('ovStats').hidden = true; $('ovStart').hidden = false; });
   })();
+  /* ---------- SALA ONLINE: chi c'è, sfide, classifica (solo modalità Sfida) ---------- */
+  const SALA = { db: null, id: null, ref: null, nick: '', list: {}, rank: {}, off: 0, out: null, inc: null, incT: 0 };
+  try { $('salaNick').value = localStorage.getItem('mf98Nick') || ''; } catch(e) {}
+  function salaDb(){
+    if (SALA.db) return SALA.db;
+    if ((window.claude && window.claude.use) || !window.firebase || !firebase.database) return null;
+    const app = firebase.apps.length ? firebase.app() : firebase.initializeApp(FB_CONFIG);
+    return (SALA.db = firebase.database(app));
+  }
+  const salaNow = () => wall() + SALA.off;
+  const nickKey = n => n.toLowerCase().replace(/[.#$\[\]\/\s]/g, '_').slice(0, 24) || 'anonimo';
+  const TSV = () => firebase.database.ServerValue.TIMESTAMP;
+  function salaEnter(){
+    const db = salaDb();
+    if (!db){ $('salaMsg').textContent = 'La sala online funziona dall\'app e dal sito, non dentro Claude.'; return; }
+    const nick = ($('salaNick').value || '').trim().slice(0, 16);
+    if (!nick){ $('salaMsg').textContent = 'Scrivi prima un soprannome.'; return; }
+    try { localStorage.setItem('mf98Nick', nick); } catch(e) {}
+    SALA.nick = nick;
+    if (!SALA.id){
+      SALA.id = Math.random().toString(36).slice(2, 10);
+      SALA.ref = db.ref('lobby/' + SALA.id); SALA.ref.onDisconnect().remove();
+      db.ref('inviti/' + SALA.id).onDisconnect().remove();
+      db.ref('.info/serverTimeOffset').on('value', sn => { SALA.off = sn.val() || 0; });
+      setInterval(() => { if (SALA.ref && SALA.here) SALA.ref.update({ hb: TSV() }).catch(() => {}); salaRender(); }, 5000);
+      db.ref('lobby').on('value', sn => { SALA.list = sn.val() || {}; salaRender(); });
+      db.ref('classifica').orderByChild('v').limitToLast(10).on('value', sn => { SALA.rank = sn.val() || {}; salaRender(); });
+      db.ref('inviti/' + SALA.id).on('value', sn => salaIncoming(sn.val() || {}));
+    }
+    SALA.here = true; MP.online = true;
+    SALA.ref.set({ nick, stato: 'libero', hb: TSV() }).catch(() => {});
+    $('ovMp').hidden = true; $('ovSala').hidden = false; $('salaInfo').textContent = 'Tocca SFIDA accanto a un nome per sfidarlo.'; salaRender();
+  }
+  function salaLeave(){
+    SALA.here = false; MP.online = false;
+    if (SALA.ref) SALA.ref.remove().catch(() => {});
+    $('ovSala').hidden = true; $('ovMp').hidden = false;
+  }
+  function salaBack(){
+    try { MP.net && MP.net.leave && MP.net.leave(); } catch(e) {}
+    MP.net = null; MP.opp = null; MP.me = { e: 1 };
+    if (SALA.ref) SALA.ref.update({ stato: 'libero', hb: TSV() }).catch(() => {});
+    $('salaInfo').textContent = 'Tocca SFIDA accanto a un nome per sfidarlo.';
+    $('ovSala').hidden = false; salaRender();
+  }
+  function salaRender(){
+    if ($('ovSala').hidden) return;
+    const now = salaNow();
+    const people = Object.keys(SALA.list).map(id => Object.assign({ id }, SALA.list[id])).filter(p => p.nick && (!p.hb || now - p.hb < 20000));
+    $('salaHead').textContent = 'Sei ' + SALA.nick + ' · online adesso: ' + people.length;
+    const L = $('salaList'); L.innerHTML = '';
+    people.sort((a, b) => (a.id === SALA.id ? -1 : b.id === SALA.id ? 1 : a.nick.localeCompare(b.nick))).forEach(p => {
+      const row = document.createElement('div'); row.className = 'salarow';
+      const name = document.createElement('span'); name.textContent = p.nick + (p.id === SALA.id ? ' (tu)' : '');
+      const st = document.createElement('span'); st.className = 'st'; st.textContent = p.stato === 'in partita' ? '🟡 in partita' : '🟢 libero';
+      row.appendChild(name); row.appendChild(st);
+      if (p.id !== SALA.id){
+        const b = document.createElement('button'); b.type = 'button'; b.textContent = 'SFIDA';
+        b.disabled = p.stato === 'in partita' || !!SALA.out;
+        b.addEventListener('click', () => salaChallenge(p.id, p.nick));
+        row.appendChild(b);
+      }
+      L.appendChild(row);
+    });
+    if (people.length < 2){ const e = document.createElement('div'); e.className = 'salarow'; e.textContent = 'Nessun altro in sala: manda il link a un amico!'; L.appendChild(e); }
+    const R = $('salaRank'); R.innerHTML = '';
+    const rk = Object.values(SALA.rank).filter(x => x && x.nick).sort((a, b) => (b.v || 0) - (a.v || 0) || (a.g || 0) - (b.g || 0)).slice(0, 10);
+    if (!rk.length){ const e = document.createElement('div'); e.className = 'salarow'; e.textContent = 'Ancora nessuna vittoria: sii il primo!'; R.appendChild(e); }
+    rk.forEach((x, i) => { const row = document.createElement('div'); row.className = 'salarow';
+      const a = document.createElement('span'); a.textContent = (i + 1) + '. ' + x.nick;
+      const b = document.createElement('span'); b.className = 'st'; b.textContent = (x.v || 0) + ' vittorie / ' + (x.g || 0) + ' partite';
+      row.appendChild(a); row.appendChild(b); R.appendChild(row); });
+  }
+  // sfidare qualcuno
+  function salaChallenge(to, nick){
+    const db = salaDb(); if (!db || SALA.out) return;
+    const r = db.ref('inviti/' + to + '/' + SALA.id);
+    SALA.out = { to, nick, r, t: wall() };
+    r.set({ nick: SALA.nick, at: TSV(), stato: 'attesa' }).catch(() => {});
+    $('salaInfo').textContent = 'Hai sfidato ' + nick + '. Aspetto la risposta…';
+    r.on('value', sn => {
+      const v = sn.val(); if (!SALA.out || SALA.out.r !== r) return;
+      if (v && v.stato === 'ok' && v.code){ r.off(); r.remove().catch(() => {}); SALA.out = null; salaStart(v.code, 'tira', nick); }
+      else if (v && v.stato === 'no'){ r.off(); r.remove().catch(() => {}); SALA.out = null; $('salaInfo').textContent = nick + ' ha rifiutato la sfida.'; salaRender(); }
+    });
+    setTimeout(() => { if (SALA.out && SALA.out.r === r){ r.off(); r.remove().catch(() => {}); SALA.out = null; $('salaInfo').textContent = nick + ' non ha risposto.'; salaRender(); } }, 22000);
+    salaRender();
+  }
+  // essere sfidati
+  function salaIncoming(all){
+    const now = salaNow();
+    const list = Object.keys(all).map(from => Object.assign({ from }, all[from])).filter(x => x.stato === 'attesa' && (!x.at || now - x.at < 22000));
+    if (SALA.inc && !list.some(x => x.from === SALA.inc.from)){ SALA.inc = null; $('ovInvite').hidden = true; }
+    if (SALA.inc || !list.length) return;
+    const x = list[0];
+    if (S.mp || !SALA.here || SALA.out){ salaDb().ref('inviti/' + SALA.id + '/' + x.from).update({ stato: 'no' }).catch(() => {}); return; }
+    SALA.inc = x; SALA.incT = wall() + 20000;
+    $('invTitle').textContent = x.nick + ' TI SFIDA!'; $('invSub').textContent = 'Modalità Sfida: 5 rigori a testa, poi oltranza';
+    $('ovInvite').hidden = false; play('whistle', { vol: .4 });
+  }
+  function salaAnswer(yes){
+    const x = SALA.inc; if (!x) return; SALA.inc = null; $('ovInvite').hidden = true;
+    const r = salaDb().ref('inviti/' + SALA.id + '/' + x.from);
+    if (!yes){ r.update({ stato: 'no' }).catch(() => {}); return; }
+    const code = String(1000 + Math.floor(Math.random()*9000)) + Math.random().toString(36).slice(2, 5);
+    r.update({ stato: 'ok', code }).catch(() => {});
+    salaStart(code, 'para', x.nick);
+  }
+  setInterval(() => { if (SALA.inc){ const left = Math.max(0, Math.ceil((SALA.incT - wall())/1000)); $('invT').textContent = left; if (!left) salaAnswer(false); } }, 250);
+  async function salaStart(code, role, nick){
+    if (SALA.ref) SALA.ref.update({ stato: 'in partita' }).catch(() => {});
+    $('ovSala').hidden = true; $('ovInvite').hidden = true;
+    MP.mode = 'sfida'; MP.autoRole = role === 'tira' ? 'tira' : null;
+    $('ovMp').hidden = false; $('mpStatus').textContent = 'Si gioca contro ' + nick + '!';
+    await mpEnter('s' + code);
+    $('mpCodeShow').hidden = true;
+    mpLobby();
+  }
+  function salaResult(win){
+    const db = salaDb(); if (!db || !SALA.nick) return;
+    const inc = n => firebase.database.ServerValue.increment(n);
+    db.ref('classifica/' + nickKey(SALA.nick)).update({ nick: SALA.nick, v: inc(win ? 1 : 0), g: inc(1) }).catch(() => {});
+  }
+  $('salaGo').addEventListener('click', salaEnter);
+  $('salaExit').addEventListener('click', salaLeave);
+  $('invYes').addEventListener('click', () => salaAnswer(true));
+  $('invNo').addEventListener('click', () => salaAnswer(false));
   // pulsanti
-  $('btnAmico').addEventListener('click', () => { $('ovStart').hidden = true; $('ovMp').hidden = false; mpSetMode(MP.mode); mpLobby(); });
+  function mpOpen(online){
+    $('mpH1').textContent = online ? 'SFIDA ONLINE' : 'PARTITA PRIVATA';
+    $('mpOnSec').style.display = online ? '' : 'none'; $('mpPrivSec').style.display = online ? 'none' : '';
+    if (!MP.net){ $('mpPick').style.display = 'none'; if (online) $('mpStatus').textContent = ''; }
+    $('ovStart').hidden = true; $('ovMp').hidden = false; mpSetMode(MP.mode); mpLobby();
+  }
+  $('btnAmico').addEventListener('click', () => mpOpen(false));
+  $('btnOnline').addEventListener('click', () => mpOpen(true));
   $('mpBack').addEventListener('click', () => { $('ovMp').hidden = true; $('ovStart').hidden = false; });
   $('mpCreate').addEventListener('click', () => { if (!MP.net) mpEnter(String(1000 + Math.floor(Math.random()*9000))); });
   $('mpJoin').addEventListener('click', () => { const c = ($('mpCode').value || '').replace(/\D/g, ''); if (MP.net) return; if (c.length === 4) mpEnter(c); else $('mpStatus').textContent = 'Scrivi le 4 cifre del codice.'; });
@@ -2956,11 +3126,12 @@
     const oe = (MP.opp && MP.opp.e) || 0; MP.me.e = Math.max(MP.me.e + 1, oe);
     S.mp = null; S.mode = 'title'; $('ovMpEnd').hidden = true;
     mpPres({ e: MP.me.e, pick: { role, mode, at: wall(), e: MP.me.e }, choice: null, go: null });
-    $('ovMp').hidden = false; $('mpPick').hidden = false; mpSetMode(mode); mpLobby();
+    $('ovMp').hidden = false; $('mpPick').style.display = ''; mpSetMode(mode); mpLobby();
   }
   $('mpAgain').addEventListener('click', () => mpRematch(false));
   $('mpSwap').addEventListener('click', () => mpRematch(true));
-  $('mpMenu').addEventListener('click', () => { if (S.mp && S.mp.phase !== 'end') return; S.mp = null; S.mode = 'title'; $('ovMpEnd').hidden = true; $('ovStart').hidden = false; });
+  $('mpMenu').addEventListener('click', () => { if (S.mp && S.mp.phase !== 'end') return; S.mp = null; S.mode = 'title'; $('ovMpEnd').hidden = true;
+    if (MP.online){ salaBack(); return; } $('ovStart').hidden = false; });
   $('btnSfida').addEventListener('click', () => { dropSuspended(); ac(); unlockVoice(); ready.then(() => startGame('sfida')); });
   $('btnLeggenda').addEventListener('click', () => { dropSuspended(); ac(); unlockVoice(); ready.then(() => startGame('leggenda')); });
   $('btnAgain').addEventListener('click', () => { ac(); startGame(S.game); });
