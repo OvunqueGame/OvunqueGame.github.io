@@ -3,7 +3,7 @@
 <style>@font-face{font-family:"Press Start 2P";src:url(ps2p.woff2) format("woff2");font-display:block}
 *,*::before,*::after{box-sizing:border-box}html,body{margin:0;padding:0;height:100%}[hidden]{display:none!important}</style>
 </head><body>
-<title>Manfredonia '98 Penalty Challenge</title>
+<title>Ovunque – Calcio, curva e passione</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
   /* Layout: cabinato arcade — campo a tutta larghezza, striscione esito e barra fortuna sotto */
@@ -87,6 +87,14 @@
     color:var(--white);font-family:var(--px);font-size:clamp(7px,1.25vw,13px);line-height:1.75;padding:.8em 1em .7em;
     pointer-events:none;text-shadow:1px 1px 0 #000;box-shadow:3px 3px 0 rgba(0,0,0,.5)}
   .subs[hidden]{display:none}
+  .cvView{position:absolute;inset:0;overflow:hidden;background:#05081a;touch-action:none;cursor:grab;z-index:1}
+  .cvView[hidden]{display:none}
+  .cvStrip{position:absolute;top:0;left:0;height:100%;will-change:transform}
+  .cvStrip img{position:absolute;top:0;left:0;height:100% !important;width:auto !important;max-width:none !important;max-height:none !important;opacity:0;pointer-events:none;user-select:none;-webkit-user-drag:none}
+  .cvStrip img.on{opacity:1}
+  .cvHint{position:absolute;left:0;right:0;bottom:8%;text-align:center;font-family:var(--px);color:#fff;font-size:clamp(9px,2.4vw,18px);line-height:1;
+    text-shadow:2px 2px 0 #05081a,-2px -2px 0 #05081a,2px -2px 0 #05081a,-2px 2px 0 #05081a;transition:opacity 1s;pointer-events:none}
+  .subs:not(.low):not(.king){visibility:hidden}
   /* durante la scena finale la telecronaca sta sotto, senza coprire */
   .subs.low{top:auto;bottom:2.5%}
   .subs.king{border-left-color:#c9a227;color:#ffe08a;background:rgba(40,22,4,.88)}
@@ -96,6 +104,7 @@
   .rotate .phone::after{content:"";position:absolute;left:50%;bottom:2px;width:4px;height:3px;margin-left:-2px;background:var(--yellow)}
   @keyframes turn{0%{transform:rotate(0)}50%{transform:rotate(90deg)}}
   @media (orientation: portrait) and (max-width: 760px){ .rotate{display:flex} }
+  @media (orientation: portrait){ #gbtns,#cvBar{top:auto;bottom:calc(100% + 12px);left:50%} }
   @media (prefers-reduced-motion: reduce){ .rotate .phone{animation:none;transform:rotate(90deg)} }
   .btn:disabled{opacity:.6;cursor:wait}
   /* tasti sempre presenti durante la partita: piccoli, in alto al centro */
@@ -162,13 +171,37 @@
   .bp.in{animation:bpin .6s steps(6)}
   @keyframes bpin{0%{transform:scale(2.2);opacity:0}100%{transform:none;opacity:1}}
   .sp-title{background:linear-gradient(rgba(1,12,27,.7),rgba(1,12,27,.9)),url(stadio.jpg) center/cover}
-  .sp-title h1{margin:0;max-width:100%;font-size:clamp(14px,min(8vh,5.8vw),64px);color:#ffd23f;line-height:1.2;text-shadow:4px 4px 0 #e8283b,8px 8px 0 #05081a;text-wrap:balance}
+  .sp-title h1{margin:0;max-width:100%;font-size:clamp(26px,min(17vh,12vw),120px);color:#1d4fd0;line-height:1.15;text-wrap:balance;--o:max(2px,.05em);text-shadow:var(--o) 0 0 #5ec8ff,calc(-1*var(--o)) 0 0 #5ec8ff,0 var(--o) 0 #5ec8ff,0 calc(-1*var(--o)) 0 #5ec8ff,var(--o) var(--o) 0 #5ec8ff,calc(-1*var(--o)) var(--o) 0 #5ec8ff,var(--o) calc(-1*var(--o)) 0 #5ec8ff,calc(-1*var(--o)) calc(-1*var(--o)) 0 #5ec8ff,calc(3*var(--o)) calc(3*var(--o)) 0 #05081a}
+  .sp-title h1::after{content:'';display:block;height:max(4px,.09em);margin:.14em auto 0;width:100%;background:#8a1c2b;box-shadow:0 max(2px,.03em) 0 #05081a}
   .sp-title h2{margin:0;max-width:100%;font-size:clamp(9px,min(3.6vh,4vw),26px);color:#fff;letter-spacing:.12em;text-shadow:3px 3px 0 #1d4fd0}
   .sp-title .motto{margin:0;color:var(--line);font-size:clamp(7px,min(2.3vh,2.8vw),14px);line-height:1.7;max-width:34ch}
   .sp-title .go{margin:3vh 0 0;font-size:clamp(8px,2.3vh,13px);animation:blink 1s steps(2) infinite}
   .sp-title h1.in{animation:drop .8s cubic-bezier(.3,1.6,.5,1)}
   .sp-title h2.in{animation:bpin .5s steps(5) .6s both}
   @keyframes drop{0%{transform:translateY(-70vh)}100%{transform:none}}
+
+  /* menu: pagina a sé, pulita, sopra tutto (non più trasparente sopra il campo) */
+  #ovStart{position:fixed;inset:0;z-index:20;justify-content:safe center;overflow-y:auto;gap:12px;padding:max(16px,env(safe-area-inset-top)) 16px 20px;
+    background:linear-gradient(rgba(5,8,22,.93),rgba(5,8,22,.97)),url(stadio.jpg) center/cover}
+  #ovStart>*{flex-shrink:0}
+  #ovStart h1{font-size:clamp(15px,min(5vw,5vh),26px)}
+  #ovStart .modes{display:flex;flex-direction:column;gap:8px;width:min(100%,460px)}
+  #ovStart .mode{display:flex;flex-direction:column;gap:4px;padding:10px 14px;border-width:2px}
+  #ovStart .mode b{font-size:clamp(10px,min(3.4vw,2.6vh),14px)}
+  #ovStart .mode span{font-size:clamp(7px,min(2.4vw,1.8vh),10px);color:#aab3d6}
+  #ovStart #btnCurva{border-color:var(--line)} #ovStart #btnCurva b{color:var(--line)}
+  #ovStart .audsel{width:min(100%,460px);justify-content:center}
+  #ovStart .cmds{width:min(100%,460px);max-width:none;opacity:.75}
+  @media (orientation: landscape) and (max-height: 560px){
+    #ovStart{gap:6px;padding:8px 16px}
+    #ovStart h1{font-size:clamp(12px,5vh,18px)}
+    #ovStart .modes{display:grid;grid-template-columns:1fr 1fr;width:min(100%,640px);gap:6px}
+    #ovStart .mode{padding:6px 10px}
+    #ovStart .mode span{display:none}
+    #ovStart #btnCurva{grid-column:1/-1}
+    #ovStart .cmds{display:none}
+    #ovStart .audsel{font-size:clamp(6px,2.6vh,9px)} #ovStart .audsel button{padding:5px 8px}
+  }
   /* scelta modalità */
   .modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px;width:min(100%,560px)}
   .mode{font:inherit;text-align:left;cursor:pointer;background:var(--panel);color:var(--white);border:3px solid var(--yellow);
@@ -183,7 +216,7 @@
   .audsel button{font:inherit;cursor:pointer;background:var(--panel);color:var(--muted);border:2px solid #2a3157;padding:7px 9px;box-shadow:3px 3px 0 #000}
   .audsel button[aria-checked="true"]{color:var(--yellow);border-color:var(--yellow)}
   .audsel button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #000}
-  @media (orientation: landscape) and (max-height: 560px){ .mode{padding:6px 8px;gap:3px} .mode b{font-size:clamp(7px,2.8vh,11px)} .mode span{font-size:clamp(5px,2.1vh,8px)} }
+  @media (orientation: landscape) and (max-height: 560px){ #btnCurva span{display:none} #btnCurva{padding:4px 8px} .modes{gap:5px} .mode{padding:5px 8px;gap:2px} .mode b{font-size:clamp(7px,2.8vh,11px)} .mode span{font-size:clamp(5px,2.1vh,8px)} }
   /* schermata comandi */
   .cmds{list-style:none;margin:0;padding:0;display:grid;gap:1.3vh;font-size:clamp(7px,1.7vw,11px);line-height:1.6;text-align:left;max-width:46ch}
   .cmds b{color:var(--yellow);display:inline-block;min-width:11ch}
@@ -206,9 +239,8 @@
     <div class="flash" id="flash"></div>
   </div>
   <div class="sp-screen sp-title" id="spTitle" hidden>
-    <h1 id="spH1">MANFREDONIA '98</h1>
-    <h2 id="spH2">PENALTY CHALLENGE</h2>
-    <p class="motto">Un rigore. Una curva. Una passione.</p>
+    <h1 id="spH1">OVUNQUE</h1>
+    <h2 id="spH2">CALCIO · CURVA · PASSIONE</h2>
     <p class="go">TOCCA PER CONTINUARE</p>
   </div>
 </div>
@@ -219,6 +251,8 @@
       <canvas id="c" width="1256" height="941" aria-label="Campo di gioco"></canvas>
       <div class="subs" id="subs" aria-live="polite" hidden></div>
       <div class="gbtns skip" id="skipBox" hidden><button type="button" id="btnSkipScene" aria-label="Salta il filmato">SALTA ▶▶</button></div>
+      <div class="cvView" id="cvView" hidden><div class="cvStrip" id="cvStrip"></div><div class="cvHint" id="cvHint">◀ SCORRI ▶</div></div>
+      <div class="gbtns" id="cvBar" hidden><button type="button" id="cvExit">◀ MENU</button></div>
       <div class="gbtns" id="gbtns" hidden>
         <button type="button" id="btnPause" aria-label="Pausa">❚❚ PAUSA</button>
         <button type="button" id="btnRestart" aria-label="Ricomincia">↻ DA CAPO</button>
@@ -276,6 +310,7 @@
           <button class="mode" id="btnLeggenda" type="button" disabled><b>LEGGENDA DEL MIRAMARE</b><span>Solo tiri, a oltranza e sempre più veloci: al primo errore è finita.</span></button>
           <button class="mode" id="btnOnline" type="button"><b>SFIDA ONLINE</b><span>Entra in sala e sfida chi è collegato adesso.</span></button>
           <button class="mode" id="btnAmico" type="button"><b>PARTITA PRIVATA</b><span>Crea un codice e giocate solo tu e un amico.</span></button>
+          <button class="mode" id="btnCurva" type="button" style="grid-column:1/-1"><b>CURVA SUD</b><span>Solo i tifosi: cori, bandiere e sciarpate. Scorri a destra e a sinistra.</span></button>
         </div>
         <div class="audsel" role="radiogroup" aria-label="Audio"><span>AUDIO</span>
           <button type="button" role="radio" data-aud="tele">TELECRONACA</button>
@@ -285,7 +320,6 @@
         <ul class="cmds">
           <li><b>TIRO</b> 1° tocco il lato, 2° tocco l'altezza</li>
           <li><b>PARATA</b> tocca la porta dove tuffarti</li>
-          <li><b>TELECRONACA</b> tocca per andare avanti</li>
         </ul>
         <div class="rotate" aria-hidden="false"><span class="phone"></span><span>Ruota il telefono in orizzontale per giocare meglio</span></div>
       </div>
@@ -357,7 +391,7 @@
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const $ = id => document.getElementById(id);
   const AUD = {}, AUDRAW = {};
-  const AUD_FILES = ['nooo1','nooo2','rabbia1','rabbia2','risate1','risate2','tele','reale','punti','re','amb','roar1','roar2','roar3','cheer1','cheer2','cheer3','kick1','kick2','splash','sea','title','win','lose','fuse','boom','sting','whistle','post','ohhh','save','buu','heart','lock','splat','kiss','thunder','horns','medieval'];
+  const AUD_FILES = ['coro1','coro2','coro3','nooo1','nooo2','rabbia1','rabbia2','risate1','risate2','tele','reale','punti','re','amb','roar1','roar2','roar3','cheer1','cheer2','cheer3','kick1','kick2','splash','sea','title','win','lose','fuse','boom','sting','whistle','post','ohhh','save','buu','heart','lock','splat','kiss','thunder','horns','medieval'];
   const FONT = '"Press Start 2P", monospace';
 
   /* ---------- immagini ---------- */
@@ -713,7 +747,7 @@
   // punteggi ("3 a 2.", "3 su 7."): ognuno registrato da solo (punti.mp3), detti dopo la frase del tiro
   const PUNTI_IDX = {"0 a 0.":[0.0,1.326],"0 a 1.":[1.426,1.266],"0 a 2.":[2.791,1.271],"0 a 3.":[4.162,1.107],"0 a 4.":[5.369,1.473],"0 a 5.":[6.942,1.422],"1 a 0.":[8.463,1.164],"1 a 1.":[9.728,1.163],"1 a 2.":[10.991,1.175],"1 a 3.":[12.266,1.027],"1 a 4.":[13.393,1.325],"1 a 5.":[14.818,1.348],"2 a 0.":[16.266,1.077],"2 a 1.":[17.443,1.129],"2 a 2.":[18.672,0.877],"2 a 3.":[19.649,1.091],"2 a 4.":[20.84,1.402],"2 a 5.":[22.342,1.337],"3 a 0.":[23.78,1.145],"3 a 1.":[25.024,1.075],"3 a 2.":[26.2,1.085],"3 a 3.":[27.385,0.946],"3 a 4.":[28.431,1.255],"3 a 5.":[29.786,1.262],"4 a 0.":[31.148,1.213],"4 a 1.":[32.461,1.061],"4 a 2.":[33.622,1.177],"4 a 3.":[34.898,1.177],"4 a 4.":[36.176,1.225],"4 a 5.":[37.501,1.487],"5 a 0.":[39.088,1.357],"5 a 1.":[40.545,1.239],"5 a 2.":[41.884,1.25],"5 a 3.":[43.234,1.174],"5 a 4.":[44.507,1.393],"5 a 5.":[46.0,1.353],"0 su 7.":[47.453,1.426],"1 su 7.":[48.979,1.248],"2 su 7.":[50.327,1.335],"3 su 7.":[51.762,1.307],"4 su 7.":[53.169,1.339],"5 su 7.":[54.608,1.335],"6 su 7.":[56.043,1.273]};
   // ingresso del Re allo stadio: due frasi del telecronista e il discorso di Re Manfredi (re.mp3)
-  const RE_IDX = {"Ma che succede?! Re Manfredi è sceso dal piedistallo... ed entra in campo a cavallo!":[0.0,6.12],"Il Miramare è ammutolito: lo Re in persona sul terreno di gioco!":[6.22,4.838],"Fermatevi, villani! Codesto tiro fu puro sterco, e lo Re non lo tollera!":[11.157,4.74],"Io, Manfredi di Svevia, sovrano di questo regno e fondatore di codesta città, mi riservo lo diritto di ribatterlo.":[15.997,6.766],"Ma alla mia epoca... e alla mia maniera!":[22.863,2.571],"Rieccoci nel '98!":[25.534,1.835],"Che viaggio nel tempo! Siamo di nuovo nel '98!":[27.47,3.666],"Corrono verso Re Manfredi!":[31.235,1.857],"Il 10 sale in sella con Re Manfredi, e il portiere si scatena nel ballo!":[33.193,5.356],"Ma che fanno?! Il 10 si tuffa... e il portiere si spiaccica sul molo!":[38.648,5.123]};
+  const RE_IDX = {"Ma che succede?! Re Manfredi è sceso dal piedistallo... ed entra in campo a cavallo!":[0.0,6.12],"Il Miramare è ammutolito: lo Re in persona sul terreno di gioco!":[6.22,4.838],"Fermatevi, villani! Codesto tiro fu puro sterco, e lo Re non lo tollera!":[11.157,4.74],"Io, Manfredi di Svevia, sovrano di questo regno e fondatore di codesta città, mi riservo lo diritto di ribatterlo.":[15.997,6.766],"Ma alla mia epoca... e alla mia maniera!":[22.863,2.571],"Corrono verso Re Manfredi!":[31.235,1.857],"Il 10 sale in sella con Re Manfredi, e il portiere si scatena nel ballo!":[33.193,5.356],"Ma che fanno?! Il 10 si tuffa... e il portiere si spiaccica sul molo!":[38.648,5.123],"Che viaggio nel tempo!":[27.47,1.5]};
   for (const k in RE_IDX) VOX[voxKeyRaw(k)] = [3, RE_IDX[k][0], RE_IDX[k][1], voxKeyRaw(k)];
   for (const k in PUNTI_IDX) VOX[voxKeyRaw(k)] = [2, PUNTI_IDX[k][0], PUNTI_IDX[k][1], voxKeyRaw(k)];
   for (const k in TELE_IDX) VOX[voxKeyRaw(k)] = [0, TELE_IDX[k][0], TELE_IDX[k][1], voxKeyRaw(k)];
@@ -974,7 +1008,7 @@
       hint('TOCCA: SCEGLI IL LATO');
       if (S.game === 'sfida'){
         subtitle(fresh(() => preSfida('mf')));
-        banner(S.tense ? 'RIGORE DECISIVO' : 'TIRA!', 'rigore ' + (sfState().na + 1) + ' di Manfredonia', S.tense ? '' : 'grey');
+        banner(S.tense ? 'RIGORE DECISIVO' : 'TIRA IL ' + rigNum() + '!', S.tense ? 'tira il numero ' + rigNum() : 'rigore ' + (sfState().na + 1) + ' di Manfredonia', S.tense ? '' : 'grey');
       } else {
         if (S.tiri > 0) subtitle(fresh(() => preShot(S.tiri + 1, S.gol)));
         const n = S.tiri + 1, perfect = S.gol === S.tiri;
@@ -988,7 +1022,7 @@
     if (!S.mp) STATS.hit(game === 'sfida' ? 'partite_sfida' : 'partite_leggenda');
     S.egg = false; S.eggUsed = false; S.bannerHit = 0; S.flash = 0;
     S.game = game || S.game || 'leggenda'; S.role = 'tira'; S.view = 'tira';
-    S.sf = { mf: [], bar: [] }; S.ks = null; S.kpick = null; S.netHit = null;
+    S.sf = { mf: [], bar: [] }; S.who = null; S.ks = null; S.kpick = null; S.netHit = null;
     try { stopMusic(); } catch(e) {}
     S.gol = 0; S.tiri = 0; S.parts = []; S.smoke = []; hud(); ambSafe();
     S.startBest = BEST.leggenda; S.streak = 0; S.rareUsed = null; say(line('start'));
@@ -1851,7 +1885,7 @@
     if (!royalScore()) return; sfx.goal(); horns(); confetti(); confetti(); S.celeb = 3; S.shake = .3;
     bigText('GOL REALE!', '#ffd23f'); banner('GOL REALE!', 'rovesciata di Sua Maestà', 'gold');
     subtitle(fresh(() => P(['Gol! Per la corona di Svevia, che rovesciata! Lo portiere non l\'ha manco veduta!','Rete! Lo Re ha fatto una cosa che nessun cristiano avea mai visto: la rovesciata!','Gol reale! L\'armigero s\'inchina dinanzi a Sua Maestà!']) + ' ' + P(['Il popolo grida: viva lo Re!','Lo Miramare intero s\'inginocchia.','Si stamperà su tutte le pergamene del regno.'])), () => {
-      S.royalDone = true; hint('TOCCA PER TORNARE AL 1998');
+      S.royalDone = true; hint('TOCCA PER TORNARE IN CAMPO');
     });
   }
   function endRoyal(fast){
@@ -1864,8 +1898,8 @@
     S.mode = 'back98'; S.t = 0; S.shot = null; S.lastRes = null;
     // se tocca agli ospiti, sotto le nuvole c'e' gia' la porta lato portiere
     if (S.game === 'sfida' && !verdict() && sfNext() === 'bar'){ S.view = 'para'; S.ks = null; S.kpick = null; S.big = null; S.ripple = null; S.netHit = null; }
-    hud(); banner('1998', 'di nuovo al Miramare', 'grey');
-    subtitle(P(['Rieccoci nel \'98!', 'Che viaggio nel tempo! Siamo di nuovo nel \'98!']), () => { if (S.mode === 'back98') next(); }, true);
+    hud(); banner('DI NUOVO AL MIRAMARE', 'che viaggio nel tempo', 'grey');
+    subtitle('Che viaggio nel tempo!', () => { if (S.mode === 'back98') next(); }, true);
   }
   function drawRoyal(dt){
     const t = S.t, side = S.rside;
@@ -2186,9 +2220,76 @@
   }
 
   /* ---------- disegno ---------- */
+
+  /* ---------- rigoristi: 10 giocatori diversi per squadra; in SFIDA tirano 9, 7, 11, 8 e per ultimo il 10, poi a oltranza 2-6 ---------- */
+  const RIG = { order: ['9','7','11','8','10','2','3','4','5','6'], cache: {}, at: null,
+    // capelli: [tinta, saturazione, moltiplica, somma] oppure 'pelato' / 'stempiato' / 'rasato'; pelle: [tinta, saturazione, moltiplica, somma]
+    hair: { castano: null, nero: [null,.25,.4,0], biondo: [44,.6,1.5,.38], rosso: [14,.85,1.4,.32], brizzolato: [30,.07,1.25,.33], platino: [48,.22,1.3,.58],
+            pelato: 'pelato', stempiato: 'stempiato', rasato: 'rasato' },
+    skin: { chiara: null, rosata: [14,.42,1,.07], olivastra: [28,.66,.82,0], scura: [22,.62,.42,.08], moltoscura: [20,.55,.3,.05] },
+    team: { mf: { '10':['castano','chiara'], '9':['nero','olivastra'], '7':['biondo','rosata'], '11':['rosso','chiara'], '8':['nero','scura'],
+                  '2':['pelato','chiara'], '3':['brizzolato','olivastra'], '4':['stempiato','chiara'], '5':['rasato','moltoscura'], '6':['platino','scura'] },
+            av: { '10':['nero','olivastra'], '9':['biondo','chiara'], '7':['rasato','scura'], '11':['castano','rosata'], '8':['rosso','chiara'],
+                  '2':['nero','moltoscura'], '3':['platino','chiara'], '4':['pelato','olivastra'], '5':['brizzolato','chiara'], '6':['stempiato','scura'] } },
+    map: {"m:ok_cel3":[0,0,226,295],"m:kn_run4":[227,0,133,292],"m:kn_run5":[361,0,135,292],"m:kn_idle":[497,0,123,291],"m:kn_run3":[621,0,136,291],"m:kn_kick5":[758,0,130,291],"m:kn_kick4":[889,0,135,290],"m:kn_run2":[1025,0,126,289],"m:ok_des1":[1152,0,128,289],"m:kn_run1":[0,296,134,288],"m:kn_kick1":[135,296,200,288],"m:kn_kick2":[336,296,162,286],"m:kn_kick3":[499,296,157,284],"m:ok_cel1":[657,296,174,282],"m:ok_cel2":[832,296,202,279],"m:ok_des2":[1035,296,123,274],"m:k_cel6":[1159,296,150,266],"m:k_des1":[0,585,123,266],"m:k_des2":[124,585,114,261],"m:ok_idle":[239,585,120,259],"m:ok_run4":[360,585,120,259],"m:k_des3":[481,585,101,257],"m:ok_run3":[583,585,122,255],"m:ok_kick1":[706,585,161,254],"m:ok_run1":[868,585,120,253],"m:ok_kick4":[989,585,192,252],"m:ok_run2":[1182,585,120,251],"m:ok_kick3":[0,852,193,250],"m:ok_kick5":[194,852,209,250],"m:ok_kick2":[404,852,182,249],"m:k_cel5":[587,852,142,242],"m:ok_des3":[730,852,125,242],"m:k_cel7":[856,852,147,235],"m:k_des4":[1004,852,94,235],"m:k_cel4":[1099,852,166,234],"m:k_cel3":[0,1103,141,233],"m:k_cel2":[142,1103,108,231],"m:k_cel1":[251,1103,112,229],"m:ok_cel4":[364,1103,197,208],"m:k_des5":[562,1103,120,200],"m:k_des6":[683,1103,116,182],"m:ok_des4":[800,1103,161,180],"m:k_cel8":[962,1103,172,176],"m:k_des7":[1135,1103,124,146],"m:k_des8":[0,1337,156,116],"p:kn_kick2|9":[157,1337,53,47,35,58],"p:kn_kick2|7":[211,1337,53,47,35,58],"p:kn_kick2|11":[265,1337,53,47,35,58],"p:kn_kick2|8":[319,1337,53,47,35,58],"p:kn_kick2|2":[373,1337,53,47,35,58],"p:kn_kick2|3":[427,1337,53,47,35,58],"p:kn_kick2|4":[481,1337,53,47,35,58],"p:kn_kick2|5":[535,1337,53,47,35,58],"p:kn_kick2|6":[589,1337,53,47,35,58],"p:kn_kick5|9":[643,1337,53,45,36,58],"p:kn_kick5|7":[697,1337,53,45,36,58],"p:kn_kick5|11":[751,1337,53,45,36,58],"p:kn_kick5|8":[805,1337,53,45,36,58],"p:kn_kick5|2":[859,1337,53,45,36,58],"p:kn_kick5|3":[913,1337,53,45,36,58],"p:kn_kick5|4":[967,1337,53,45,36,58],"p:kn_kick5|5":[1021,1337,53,45,36,58],"p:kn_kick5|6":[1075,1337,53,45,36,58],"p:kn_run5|9":[1129,1337,54,44,46,56],"p:kn_run5|7":[1184,1337,54,44,46,56],"p:kn_run5|11":[1239,1337,54,44,46,56],"p:kn_run5|8":[1294,1337,54,44,46,56],"p:kn_run5|2":[0,1454,54,44,46,56],"p:kn_run5|3":[55,1454,54,44,46,56],"p:kn_run5|4":[110,1454,54,44,46,56],"p:kn_run5|5":[165,1454,54,44,46,56],"p:kn_run5|6":[220,1454,54,44,46,56],"p:k_des2|9":[275,1454,44,44,32,65],"p:k_des2|7":[320,1454,44,44,32,65],"p:k_des2|11":[365,1454,44,44,32,65],"p:k_des2|8":[410,1454,44,44,32,65],"p:k_des2|2":[455,1454,44,44,32,65],"p:k_des2|3":[500,1454,44,44,32,65],"p:k_des2|4":[545,1454,44,44,32,65],"p:k_des2|5":[590,1454,44,44,32,65],"p:k_des2|6":[635,1454,44,44,32,65],"p:kn_idle|9":[680,1454,48,43,38,58],"p:kn_idle|7":[729,1454,48,43,38,58],"p:kn_idle|11":[778,1454,48,43,38,58],"p:kn_idle|8":[827,1454,48,43,38,58],"p:kn_idle|2":[876,1454,48,43,38,58],"p:kn_idle|3":[925,1454,48,43,38,58],"p:kn_idle|4":[974,1454,48,43,38,58],"p:kn_idle|5":[1023,1454,48,43,38,58],"p:kn_idle|6":[1072,1454,48,43,38,58],"p:kn_kick4|9":[1121,1454,53,43,29,58],"p:kn_kick4|7":[1175,1454,53,43,29,58],"p:kn_kick4|11":[1229,1454,53,43,29,58],"p:kn_kick4|8":[1283,1454,53,43,29,58],"p:kn_kick4|2":[1337,1454,53,43,29,58],"p:kn_kick4|3":[0,1499,53,43,29,58],"p:kn_kick4|4":[54,1499,53,43,29,58],"p:kn_kick4|5":[108,1499,53,43,29,58],"p:kn_kick4|6":[162,1499,53,43,29,58],"p:k_des1|9":[216,1499,43,43,40,65],"p:k_des1|7":[260,1499,43,43,40,65],"p:k_des1|11":[304,1499,43,43,40,65],"p:k_des1|8":[348,1499,43,43,40,65],"p:k_des1|2":[392,1499,43,43,40,65],"p:k_des1|3":[436,1499,43,43,40,65],"p:k_des1|4":[480,1499,43,43,40,65],"p:k_des1|5":[524,1499,43,43,40,65],"p:k_des1|6":[568,1499,43,43,40,65],"p:k_des3|9":[612,1499,41,43,9,63],"p:k_des3|7":[654,1499,41,43,9,63],"p:k_des3|11":[696,1499,41,43,9,63],"p:k_des3|8":[738,1499,41,43,9,63],"p:k_des3|2":[780,1499,41,43,9,63],"p:k_des3|3":[822,1499,41,43,9,63],"p:k_des3|4":[864,1499,41,43,9,63],"p:k_des3|5":[906,1499,41,43,9,63],"p:k_des3|6":[948,1499,41,43,9,63],"p:kn_run2|9":[990,1499,54,42,44,56],"p:kn_run2|7":[1045,1499,54,42,44,56],"p:kn_run2|11":[1100,1499,54,42,44,56],"p:kn_run2|8":[1155,1499,54,42,44,56],"p:kn_run2|2":[1210,1499,54,42,44,56],"p:kn_run2|3":[1265,1499,54,42,44,56],"p:kn_run2|4":[1320,1499,54,42,44,56],"p:kn_run2|5":[0,1543,54,42,44,56],"p:kn_run2|6":[55,1543,54,42,44,56],"p:kn_run3|9":[110,1543,52,42,48,58],"p:kn_run3|7":[163,1543,52,42,48,58],"p:kn_run3|11":[216,1543,52,42,48,58],"p:kn_run3|8":[269,1543,52,42,48,58],"p:kn_run3|2":[322,1543,52,42,48,58],"p:kn_run3|3":[375,1543,52,42,48,58],"p:kn_run3|4":[428,1543,52,42,48,58],"p:kn_run3|5":[481,1543,52,42,48,58],"p:kn_run3|6":[534,1543,52,42,48,58],"p:kn_run4|9":[587,1543,54,42,46,58],"p:kn_run4|7":[642,1543,54,42,46,58],"p:kn_run4|11":[697,1543,54,42,46,58],"p:kn_run4|8":[752,1543,54,42,46,58],"p:kn_run4|2":[807,1543,54,42,46,58],"p:kn_run4|3":[862,1543,54,42,46,58],"p:kn_run4|4":[917,1543,54,42,46,58],"p:kn_run4|5":[972,1543,54,42,46,58],"p:kn_run4|6":[1027,1543,54,42,46,58],"p:kn_kick1|9":[1082,1543,51,41,84,62],"p:kn_kick1|7":[1134,1543,51,41,84,62],"p:kn_kick1|11":[1186,1543,51,41,84,62],"p:kn_kick1|8":[1238,1543,51,41,84,62],"p:kn_kick1|2":[1290,1543,51,41,84,62],"p:kn_kick1|3":[1342,1543,51,41,84,62],"p:kn_kick1|4":[0,1586,51,41,84,62],"p:kn_kick1|5":[52,1586,51,41,84,62],"p:kn_kick1|6":[104,1586,51,41,84,62],"p:kn_kick3|9":[156,1586,51,41,16,56],"p:kn_kick3|7":[208,1586,51,41,16,56],"p:kn_kick3|11":[260,1586,51,41,16,56],"p:kn_kick3|8":[312,1586,51,41,16,56],"p:kn_kick3|2":[364,1586,51,41,16,56],"p:kn_kick3|3":[416,1586,51,41,16,56],"p:kn_kick3|4":[468,1586,51,41,16,56],"p:kn_kick3|5":[520,1586,51,41,16,56],"p:kn_kick3|6":[572,1586,51,41,16,56],"p:kn_run1|9":[624,1586,52,40,50,58],"p:kn_run1|7":[677,1586,52,40,50,58],"p:kn_run1|11":[730,1586,52,40,50,58],"p:kn_run1|8":[783,1586,52,40,50,58],"p:kn_run1|2":[836,1586,52,40,50,58],"p:kn_run1|3":[889,1586,52,40,50,58],"p:kn_run1|4":[942,1586,52,40,50,58],"p:kn_run1|5":[995,1586,52,40,50,58],"p:kn_run1|6":[1048,1586,52,40,50,58],"p:k_cel1|9":[1101,1586,37,40,42,43],"p:k_cel1|7":[1139,1586,37,40,42,43],"p:k_cel1|11":[1177,1586,37,40,42,43],"p:k_cel1|8":[1215,1586,37,40,42,43],"p:k_cel1|2":[1253,1586,37,40,42,43],"p:k_cel1|3":[1291,1586,37,40,42,43],"p:k_cel1|4":[1329,1586,37,40,42,43],"p:k_cel1|5":[0,1628,37,40,42,43],"p:k_cel1|6":[38,1628,37,40,42,43],"p:k_cel6|9":[76,1628,36,39,56,72],"p:k_cel6|7":[113,1628,36,39,56,72],"p:k_cel6|11":[150,1628,36,39,56,72],"p:k_cel6|8":[187,1628,36,39,56,72],"p:k_cel6|2":[224,1628,36,39,56,72],"p:k_cel6|3":[261,1628,36,39,56,72],"p:k_cel6|4":[298,1628,36,39,56,72],"p:k_cel6|5":[335,1628,36,39,56,72],"p:k_cel6|6":[372,1628,36,39,56,72],"p:k_cel7|9":[409,1628,34,39,53,52],"p:k_cel7|7":[444,1628,34,39,53,52],"p:k_cel7|11":[479,1628,34,39,53,52],"p:k_cel7|8":[514,1628,34,39,53,52],"p:k_cel7|2":[549,1628,34,39,53,52],"p:k_cel7|3":[584,1628,34,39,53,52],"p:k_cel7|4":[619,1628,34,39,53,52],"p:k_cel7|5":[654,1628,34,39,53,52],"p:k_cel7|6":[689,1628,34,39,53,52],"p:k_cel2|9":[724,1628,38,36,39,47],"p:k_cel2|7":[763,1628,38,36,39,47],"p:k_cel2|11":[802,1628,38,36,39,47],"p:k_cel2|8":[841,1628,38,36,39,47],"p:k_cel2|2":[880,1628,38,36,39,47],"p:k_cel2|3":[919,1628,38,36,39,47],"p:k_cel2|4":[958,1628,38,36,39,47],"p:k_cel2|5":[997,1628,38,36,39,47],"p:k_cel2|6":[1036,1628,38,36,39,47],"p:k_cel4|9":[1075,1628,36,36,65,48],"p:k_cel4|7":[1112,1628,36,36,65,48],"p:k_cel4|11":[1149,1628,36,36,65,48],"p:k_cel4|8":[1186,1628,36,36,65,48],"p:k_cel4|2":[1223,1628,36,36,65,48],"p:k_cel4|3":[1260,1628,36,36,65,48],"p:k_cel4|4":[1297,1628,36,36,65,48],"p:k_cel4|5":[1334,1628,36,36,65,48],"p:k_cel4|6":[0,1669,36,36,65,48],"p:k_cel5|9":[37,1669,37,35,52,58],"p:k_cel5|7":[75,1669,37,35,52,58],"p:k_cel5|11":[113,1669,37,35,52,58],"p:k_cel5|8":[151,1669,37,35,52,58],"p:k_cel5|2":[189,1669,37,35,52,58],"p:k_cel5|3":[227,1669,37,35,52,58],"p:k_cel5|4":[265,1669,37,35,52,58],"p:k_cel5|5":[303,1669,37,35,52,58],"p:k_cel5|6":[341,1669,37,35,52,58],"p:k_cel3|9":[379,1669,38,33,49,50],"p:k_cel3|7":[418,1669,38,33,49,50],"p:k_cel3|11":[457,1669,38,33,49,50],"p:k_cel3|8":[496,1669,38,33,49,50],"p:k_cel3|2":[535,1669,38,33,49,50],"p:k_cel3|3":[574,1669,38,33,49,50],"p:k_cel3|4":[613,1669,38,33,49,50],"p:k_cel3|5":[652,1669,38,33,49,50],"p:k_cel3|6":[691,1669,38,33,49,50],"p:k_cel8|9":[730,1669,41,33,58,50],"p:k_cel8|7":[772,1669,41,33,58,50],"p:k_cel8|11":[814,1669,41,33,58,50],"p:k_cel8|8":[856,1669,41,33,58,50],"p:k_cel8|2":[898,1669,41,33,58,50],"p:k_cel8|3":[940,1669,41,33,58,50],"p:k_cel8|4":[982,1669,41,33,58,50],"p:k_cel8|5":[1024,1669,41,33,58,50],"p:k_cel8|6":[1066,1669,41,33,58,50],"p:k_cel8|10":[1108,1669,41,33,58,50]} };
+  RIG.at = new Image(); RIG.at.src = 'sp/rig_atlas.png';
+  const RIG_END = ['outro','over','statua','royal','royalIn','royalOut','back98'];
+  // chi tira adesso: squadra e numero (solo SFIDA, anche online; nella LEGGENDA e nelle scene finali sempre il 10 del Manfredonia)
+  function rigWho(){
+    if (S.game !== 'sfida' || RIG_END.includes(S.mode)) return { team: 'mf', num: '10' };
+    // il numero si decide prima del tiro e resta fisso fino al rigore dopo (anche mentre esulta o si dispera)
+    if (S.who && !['aimX','aimY','paraWait','kWait','mpWait','mpPre'].includes(S.mode)) return S.who;
+    const team = S.mp ? S.mp.shooter : (S.view === 'para' ? 'av' : 'mf');
+    const arr = (S.sf || {})[team === 'mf' ? 'mf' : 'bar'] || [];
+    return S.who = { team, num: RIG.order[arr.length % 10] };
+  }
+  function rigNum(){ return rigWho().num; }
+  function rigHsv(r, g, b){ const mx = Math.max(r, g, b), mn = Math.min(r, g, b), ch = mx - mn; let h = 0;
+    if (ch){ if (mx === r) h = ((g - b)/ch) % 6; else if (mx === g) h = (b - r)/ch + 2; else h = (r - g)/ch + 4; }
+    h *= 60; if (h < 0) h += 360; return [h, mx ? ch/mx : 0, mx/255]; }
+  function rigRgb(h, s, v){ h = ((h % 360) + 360) % 360 / 60; const i = Math.floor(h) % 6, f = h - Math.floor(h), p = v*(1 - s), q = v*(1 - s*f), t = v*(1 - s*(1 - f));
+    return [[v,t,p],[q,v,p],[p,v,t],[p,q,v],[t,p,v],[v,p,q]][i].map(x => Math.round(Math.max(0, Math.min(1, x))*255)); }
+  function rigSprite(name, base, tag){
+    const w = rigWho(), key = name + '|' + w.team + w.num + '|' + (tag || '');
+    if (key in RIG.cache) return RIG.cache[key];
+    const M = RIG.map, at = RIG.at; if (!base || !at.complete || !at.naturalWidth) return null;
+    const pk = M['p:' + name + '|' + w.num], mk = M['m:' + name], lk = RIG.team[w.team][w.num];
+    const hp = RIG.hair[lk[0]], sp = RIG.skin[lk[1]];
+    if (!pk && !hp && !sp){ RIG.cache[key] = null; return null; }
+    const c = document.createElement('canvas'); c.width = base.width; c.height = base.height; const x = c.getContext('2d');
+    x.drawImage(base, 0, 0);
+    if (pk) x.drawImage(at, pk[0], pk[1], pk[2], pk[3], pk[4], pk[5], pk[2], pk[3]);
+    if ((hp || sp) && mk && mk[2] === base.width && mk[3] === base.height){
+      try {
+        const m = document.createElement('canvas'); m.width = mk[2]; m.height = mk[3]; const mx = m.getContext('2d');
+        mx.drawImage(at, mk[0], mk[1], mk[2], mk[3], 0, 0, mk[2], mk[3]);
+        const md = mx.getImageData(0, 0, mk[2], mk[3]).data, d = x.getImageData(0, 0, c.width, c.height), p = d.data, W2 = c.width;
+        let hy0 = 1e9, hy1 = -1;
+        for (let i = 0; i < md.length; i += 4) if (md[i] > 127){ const y = (i/4/W2) | 0; if (y < hy0) hy0 = y; if (y > hy1) hy1 = y; }
+        const crownY = hy0 + (hy1 - hy0)*.6;
+        for (let i = 0; i < p.length; i += 4){
+          let hair = md[i] > 127, skin = md[i+1] > 127; if (!hair && !skin) continue;
+          let [h, s, v] = rigHsv(p[i], p[i+1], p[i+2]);
+          if (hair){
+            const y = (i/4/W2) | 0;
+            if (hp === 'pelato' || (hp === 'stempiato' && y < crownY)){ h = 24; s = .5; v = Math.min(1, v*.7 + .45); hair = false; skin = true; }
+            else if (hp === 'rasato'){ h = sp ? sp[0] : 22; s = sp ? Math.min(.7, sp[1] + .1) : .42; v = sp ? Math.min(1, (v*.5 + .3)*sp[2]*.9 + sp[3]) : v*.5 + .3; }
+            else if (hp && hp !== 'stempiato'){ if (hp[0] != null) h = hp[0]; s = hp[1]; v = Math.min(1, v*hp[2] + hp[3]); }
+          }
+          if (skin && sp){ h = sp[0]; s = sp[1]; v = Math.min(1, v*sp[2] + sp[3]); }
+          const o = rigRgb(h, s, v); p[i] = o[0]; p[i+1] = o[1]; p[i+2] = o[2];
+        }
+        x.putImageData(d, 0, 0);
+      } catch(e) {}
+    }
+    return RIG.cache[key] = c;
+  }
   function spr(name, cx, bottom, scale, flipped=false){
     const kd = mpKind(name);
-    const img = kd ? mpVar(name, kd, flipped) : flipped ? FLIP[name] : (S.role === 'para' && RED[name]) ? RED[name] : IMG[name]; if (!img) return;
+    let img = kd ? mpVar(name, kd, flipped) : flipped ? FLIP[name] : (S.role === 'para' && RED[name]) ? RED[name] : IMG[name]; if (!img) return;
+    if (!flipped && /^(kn?_|ok_)/.test(name)){ const base = IMG[name]; let rg = rigSprite(name, base, '');
+      if (rg && kd) rg = RIG.cache[name + '|' + rigWho().team + rigWho().num + '|' + kd] || (RIG.cache[name + '|' + rigWho().team + rigWho().num + '|' + kd] = recol(rg, kd));
+      if (rg) img = rg; }
     const w = img.width*scale, h = img.height*scale;
     ctx.drawImage(img, Math.round(cx - w/2), Math.round(bottom - h), Math.round(w), Math.round(h));
   }
@@ -2207,11 +2308,24 @@
     const done = S.mode === 'result' || S.mode === 'over' || S.mode === 'outro';
     if (S.game === 'sfida'){
       // SFIDA: gol veri delle due squadre
-      const { a, b, na, nb } = sfState();
-      ctx.fillStyle = '#ffffff'; ctx.fillText(S.mp && S.mp.team === 'mf' ? 'TU' : 'MF', 44, 52);
-      ctx.fillStyle = '#05081a'; ctx.fillRect(150, 22, 152, 56);
-      ctx.fillStyle = '#ffd23f'; ctx.textAlign = 'center'; ctx.fillText(a + '-' + b, 226, 52);
-      ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.fillText(S.mp && S.mp.team === 'av' ? 'TU' : 'BAR', 318, 52);
+      const { na, nb } = sfState(), sf = S.sf || { mf: [], bar: [] };
+      // pallini: bianco = da tirare, verde = gol, rosso con la X = sbagliato o parato; a oltranza si vedono gli ultimi 5
+      const cur = done ? null : (S.view === 'para' ? 'bar' : 'mf');
+      const tot = Math.max(5, na + (cur === 'mf' ? 1 : 0), nb + (cur === 'bar' ? 1 : 0)), from = tot - 5;
+      const row = (lbl, arr, team, y) => {
+        ctx.font = '22px ' + FONT; ctx.textAlign = 'left'; ctx.fillStyle = '#ffffff'; ctx.fillText(lbl, 24, y);
+        for (let k = 0; k < 5; k++){
+          const i = from + k, cx = 158 + k*56, r = 13, v = arr[i];
+          ctx.beginPath(); ctx.arc(cx, y, r, 0, 6.283);
+          ctx.fillStyle = v === true ? '#2fd14a' : v === false ? '#e8283b' : '#f4f6fb'; ctx.fill();
+          ctx.lineWidth = 3; ctx.strokeStyle = '#05081a'; ctx.stroke();
+          if (v === false){ ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(cx - 6, y - 6); ctx.lineTo(cx + 6, y + 6); ctx.moveTo(cx + 6, y - 6); ctx.lineTo(cx - 6, y + 6); ctx.stroke(); }
+          if (team === cur && i === arr.length && Math.sin(time*7) > -.2){ ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(cx, y, r + 5, 0, 6.283); ctx.stroke(); }
+        }
+      };
+      row(S.mp && S.mp.team === 'mf' ? 'TU' : 'MF', sf.mf, 'mf', 32);
+      row(S.mp && S.mp.team === 'av' ? 'TU' : 'OSP', sf.bar, 'bar', 68);
+      ctx.font = '30px ' + FONT; ctx.textAlign = 'left';
       box(W - 270, 12, 262, 76);
       ctx.font = '14px ' + FONT; ctx.fillStyle = '#ffd23f'; ctx.fillText(na >= 5 && nb >= 5 ? 'OLTRANZA' : 'RIGORE', W - 248, 36);
       ctx.font = '28px ' + FONT; ctx.fillStyle = '#ffffff';
@@ -2404,6 +2518,56 @@
     ctx.restore();
   }
 
+  /* ---------- curva in festa: durante i cori (e sul gol) parte l'animazione della curva, a tempo ---------- */
+  const BEAT = { amp: 0, t0: 0, bpm: 0, lt: 0 };
+  const CORI_BPM = { coro1: 150, coro2: 147, coro3: 143 };
+  const CURVA = [1, 2, 3, 4].map(k => { const i = new Image(); i.src = 'cs2/cv' + k + '.jpg'; return i; });
+  function curvaFx(time){
+    const dt = Math.min(.1, Math.max(0, time - BEAT.lt)); BEAT.lt = time;
+    if (!CURVA.every(i => i.complete && i.naturalWidth)) return;
+    // la curva ferma del gioco diventa il primo fotogramma: così l'animazione parte dalla stessa immagine
+    if (!BEAT.baked && IMG.bg){ const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
+      x.drawImage(IMG.bg, 0, 0, W, H); x.drawImage(CURVA[0], 0, 0, W, 314); x.drawImage(c, 1096, 342, 160, 30, 1096, 314, 160, 30); IMG.bg = c; BEAT.baked = true; }
+    const hype = S.celeb > 0 || CV.on;
+    const now = AC ? AC.currentTime : 0, singing = !!(BEAT.bpm && AC && now >= BEAT.t0);
+    const SEQ = [0, 1, 2, 3, 2, 1], idx = ph => SEQ[((Math.floor(ph*3) % 6) + 6) % 6];
+    if (singing){ BEAT.run = true; BEAT.ph = Math.max(0, (now - BEAT.t0 - .05) * BEAT.bpm/60); }
+    else if (hype){ BEAT.run = true; BEAT.ph = (BEAT.ph || 0) + dt*2.6; }
+    else if (BEAT.run){ BEAT.ph += dt*2.4; if (idx(BEAT.ph) === 0){ BEAT.run = false; BEAT.ph = 0; } }   // finisce il giro e si ferma sul primo fotogramma
+    BEAT.k = BEAT.run ? idx(BEAT.ph) : 0;
+    if (CV.on || !BEAT.k) return;
+    const fr = CURVA[BEAT.k];
+    ctx.drawImage(fr, 0, 0, fr.naturalWidth, fr.naturalHeight, 0, 0, W, 314);
+  }
+  /* ---------- modalità CURVA: solo i tifosi ingranditi, cori di continuo, si scorre a destra e sinistra ---------- */
+  const CV = { on: false, x: .5, drag: null, auto: 1, t: 0, hi: null };
+  function curvaMode(on){
+    CV.on = on; CV.x = .42; CV.auto = 1; CV.t = 0; CV.drag = null; CV.fr = -1;
+    $('ovStart').hidden = on; $('cvBar').hidden = !on; $('cvView').hidden = !on;
+    try { banner(on ? 'CURVA SUD' : 'PRONTO', on ? 'scorri a destra e a sinistra' : ''); } catch(e) {}
+    if (on && !CV.imgs){
+      const st = $('cvStrip');
+      // subito le immagini piccole (già caricate), poi quelle grandi appena arrivano
+      CV.imgs = [1, 2, 3, 4].map(k => { const i = new Image(); i.alt = ''; i.src = 'cs2/cv' + k + '.jpg'; st.appendChild(i);
+        const big = new Image(); big.onload = () => { i.src = big.src; }; big.src = 'cs2/cz' + k + '.jpg'; return i; });
+    }
+    if (on){ try { hint('', false); } catch(e) {} BEAT.ph = 0; CORI.next = 0; $('cvHint').style.opacity = 1; try { stopMusic(); } catch(e) {} ambSafe(); }
+    else { BEAT.bpm = 0; BEAT.run = false; BEAT.ph = 0; BEAT.k = 0; }
+  }
+  function drawCurvaZoom(dt){
+    try { curvaFx(time); } catch(e) {}
+    CV.t += dt;
+    if (CV.t > 4) $('cvHint').style.opacity = 0;
+    if (CV.auto) CV.x = .5 + Math.sin(CV.t*.22 - .35)*.5*.92;   // panoramica lenta finché non tocchi
+    const k = BEAT.k || 0;
+    if (k !== CV.fr && CV.imgs){ CV.imgs.forEach((im, i) => im.classList.toggle('on', i === k)); CV.fr = k; }
+    const v = $('cvView'), im = CV.imgs && CV.imgs[k];
+    if (!im || !im.naturalWidth || !v.clientHeight) return;
+    const vw = v.clientWidth, vh = v.clientHeight, iw = vh * im.naturalWidth/im.naturalHeight;
+    const tx = -Math.max(0, iw - vw) * CV.x;
+    $('cvStrip').style.transform = 'translate3d(' + tx.toFixed(1) + 'px,0,0)';
+  }
+
   // spalti vivi: il pubblico (sopra la traversa e ai lati della porta) ondeggia; sul gol salta
   const CROWD = [[0, 140, W, 174], [0, 314, 158, 156], [1103, 314, 153, 156]];
   function crowdClip(){ ctx.beginPath(); CROWD.forEach(r => ctx.rect(r[0], r[1], r[2], r[3])); ctx.clip(); }
@@ -2427,6 +2591,7 @@
       }
     }
     ctx.restore();
+    try { curvaFx(time); } catch(e) {}
   }
   function smokeBurst(){
     const spots = [90, 300, 520, 760, 980, 1180];
@@ -2484,12 +2649,14 @@
     // SFIDA: dopo l'indizio parte la rincorsa dell'ospite
     if (S.mode === 'kWait' && S.t > 2.1 && !S.mp){ S.mode = 'kRun'; S.t = 0; play('whistle', { vol: .55 }); if (S.tense) buzz(60); }
     if (S.mp) mpTick();
+    coriTick();
+    if (CV.on){ drawCurvaZoom(dt); return; }
     if (S.mode === 'aimY'){ const per = 1.3/aimFast(); const ph = (S.t/per) % 2; S.v = (ph < 1 ? ph : 2 - ph) * 1.18; }
     if (S.mode === 'result' && S.canNext && time - S.canNextAt > 2.5) next();
     if (S.mode === 'paraWait' && S.t > 1.4) cpuKick();
     if ((S.mode === 'aimX' || S.mode === 'aimY' || S.mode === 'paraWait' || S.mode === 'kWait') && AC){
       if (!nextChant) nextChant = time + 1.5;
-      if (time > nextChant){ chantSafe(); nextChant = time + 7 + Math.random()*5; }
+      if (time > nextChant){ if (!AUD.coro1) chantSafe(); nextChant = time + 7 + Math.random()*5; }
     }
 
     ctx.imageSmoothingEnabled = false;
@@ -2535,14 +2702,21 @@
     const r = stage.getBoundingClientRect();
     const m = matchMedia('(orientation: landscape) and (max-height: 560px)').matches ? 0 : 6;
     const sc = Math.min((r.width - m) / W, (r.height - m) / H);
-    $('gbtns').style.fontSize = $('mpBar').style.fontSize = Math.max(6, W*sc*.0098).toFixed(1) + 'px';
+    $('gbtns').style.fontSize = $('cvBar').style.fontSize = $('mpBar').style.fontSize = Math.max(6, W*sc*.0098).toFixed(1) + 'px';
     cv.style.width = Math.floor(W*sc) + 'px'; cv.style.height = Math.floor(H*sc) + 'px';
   }
   new ResizeObserver(fit).observe(stage); fit();
 
   /* ---------- input ---------- */
-  cv.addEventListener('pointerdown', e => { e.preventDefault(); tap(e); });
+  cv.addEventListener('pointerdown', e => { e.preventDefault(); if (CV.on) return; tap(e); });
+  { const v = $('cvView');
+    v.addEventListener('pointerdown', e => { e.preventDefault(); CV.drag = { x: e.clientX, p: CV.x }; CV.auto = 0; try { v.setPointerCapture(e.pointerId); } catch(_) {} });
+    v.addEventListener('pointermove', e => { if (!CV.drag) return; const im = CV.imgs && CV.imgs[CV.fr < 0 ? 0 : CV.fr]; if (!im || !im.naturalWidth) return;
+      const iw = v.clientHeight * im.naturalWidth/im.naturalHeight, span = Math.max(1, iw - v.clientWidth);
+      CV.x = Math.max(0, Math.min(1, CV.drag.p - (e.clientX - CV.drag.x)/span)); });
+    ['pointerup','pointercancel'].forEach(n => v.addEventListener(n, () => { CV.drag = null; })); }
   addEventListener('keydown', e => {
+    if (CV.on){ if (e.code === 'ArrowLeft'){ CV.x = Math.max(0, CV.x - .06); CV.auto = 0; } else if (e.code === 'ArrowRight'){ CV.x = Math.min(1, CV.x + .06); CV.auto = 0; } else if (e.code === 'Escape') curvaMode(false); e.preventDefault(); return; }
     if (e.code === 'Space' || e.code === 'Enter'){
       if (!$('splash').hidden){ e.preventDefault(); splashTap(); return; }
       if (document.activeElement && document.activeElement.tagName === 'BUTTON') return;
@@ -3104,6 +3278,23 @@
   $('salaExit').addEventListener('click', salaLeave);
   $('invYes').addEventListener('click', () => salaAnswer(true));
   $('invNo').addEventListener('click', () => salaAnswer(false));
+  /* ---------- cori veri della curva, di continuo durante le partite ---------- */
+  const CORI = { h: null, end: 0, next: 0, last: '' };
+  function coriTick(){
+    if (!AC || muted) return;
+    const now = AC.currentTime;
+    const on = (CV.on || !['title','over','intro','statua','outro','royal','royalIn','royalOut','back98'].includes(S.mode)) && $('ovStart').hidden && $('ovEnd').hidden && $('splash').hidden && !PAUSED;
+    if (!on){ BEAT.bpm = 0; if (CORI.h){ stopSnd(CORI.h, 1.2); CORI.h = null; if (amb) amb.gain.setTargetAtTime(1, now, .5); } CORI.next = now + 1.5; return; }
+    // quando parla il telecronista i cori si abbassano
+    if (CORI.h){ const talk = voxSrc.some(h => h.end > now); CORI.h.g.gain.setTargetAtTime(talk ? .5 : 1.3, now, .25); if (amb) amb.gain.setTargetAtTime(.45, now, .5); }
+    if (CORI.h && now < CORI.end) return;
+    if (CORI.h){ CORI.h = null; BEAT.bpm = 0; CORI.next = now + (CV.on ? .6 : 1.5 + Math.random()*3.5); }
+    if (now < CORI.next) return;
+    const name = pickOf(['coro1','coro2','coro3'].filter(n => n !== CORI.last && AUD[n])); if (!name) return;
+    const h = play(name, { vol: .001 }); if (!h) return;
+    h.g.gain.setTargetAtTime(1.3, now, .5);
+    CORI.h = h; CORI.last = name; window.__coro = name; BEAT.t0 = now; BEAT.bpm = CORI_BPM[name] || 145; CORI.end = now + AUD[name].duration;
+  }
   // pulsanti
   function mpOpen(online){
     $('mpH1').textContent = online ? 'SFIDA ONLINE' : 'PARTITA PRIVATA';
@@ -3112,6 +3303,8 @@
     $('ovStart').hidden = true; $('ovMp').hidden = false; mpSetMode(MP.mode); mpLobby();
   }
   $('btnAmico').addEventListener('click', () => mpOpen(false));
+  $('btnCurva').addEventListener('click', () => { dropSuspended(); ac(); curvaMode(true); });
+  $('cvExit').addEventListener('click', e => { e.stopPropagation(); curvaMode(false); });
   $('btnOnline').addEventListener('click', () => mpOpen(true));
   $('mpBack').addEventListener('click', () => { $('ovMp').hidden = true; $('ovStart').hidden = false; });
   $('mpCreate').addEventListener('click', () => { if (!MP.net) mpEnter(String(1000 + Math.floor(Math.random()*9000))); });
@@ -3317,6 +3510,4 @@
   requestAnimationFrame(frame);
 })();
 </script>
-
-
 </body></html>
