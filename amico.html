@@ -454,7 +454,7 @@
           <button class="mode" id="btnLeggenda" type="button" disabled><b>LEGGENDA DEL MIRAMARE</b><span>Solo tiri, a oltranza e sempre più veloci: al primo errore è finita.</span></button>
           <button class="mode" id="btnOnline" type="button"><b>SFIDA ONLINE</b><span>Entra in sala e sfida chi è collegato adesso.</span></button>
           <button class="mode" id="btnAmico" type="button"><b>PARTITA PRIVATA</b><span>Crea un codice e giocate solo tu e un amico.</span></button>
-          <button class="mode" id="btnCurva" type="button" style="grid-column:1/-1"><b>CURVA SUD</b><span>Solo i tifosi: cori, bandiere e sciarpate. Scorri a destra e a sinistra.</span></button>
+          <button class="mode" id="btnCurva" type="button" style="grid-column:1/-1"><b>CURVA SUD</b><span>La curva che canta, e lo scatolone col materiale della curva.</span></button>
         </div>
         <div class="audsel" role="radiogroup" aria-label="Audio"><span>AUDIO</span>
           <button type="button" role="radio" data-aud="tele">TELECRONACA</button>
@@ -2822,7 +2822,7 @@
     CV.on = on; CV.y = 0; CV.auto = 1; CV.t = 0; CV.drag = null;
     if (!on){ try { albClose(); } catch(e) {} try { boxClose(); } catch(e) {} $('ovBox').hidden = true; }
     $('ovStart').hidden = on; $('cvBar').hidden = !on; $('cvView').hidden = !on;
-    try { banner(on ? 'CURVA SUD' : 'PRONTO', on ? 'scorri giù: c\u2019è lo scatolone' : ''); } catch(e) {}
+    try { banner(on ? 'CURVA SUD' : 'PRONTO', ''); } catch(e) {}
     const vid = $('cvVid');
     if (on){
       if (!vid.src) vid.src = 'cv/curva.mp4';
@@ -3579,10 +3579,15 @@
   function coriTick(){
     if (!AC || muted) return;
     const now = AC.currentTime;
-    const on = !(typeof ALB !== 'undefined' && ALB.playing) && (CV.on || !['title','over','intro','statua','outro','royal','royalIn','royalOut','back98'].includes(S.mode)) && $('ovStart').hidden && $('ovEnd').hidden && $('splash').hidden && !PAUSED;
-    if (!on){ BEAT.bpm = 0; if (CORI.h){ stopSnd(CORI.h, 1.2); CORI.h = null; if (amb) amb.gain.setTargetAtTime(1, now, .5); } CORI.next = now + 1.5; return; }
+    // brusio della folla: solo in partita e in CURVA SUD; zitto nel menu, nelle schermate finali e mentre gira la VHS
+    const vhs = typeof ALB !== 'undefined' && ALB.playing;
+    const inGame = !['title','over'].includes(S.mode) && $('ovStart').hidden && $('ovEnd').hidden && $('splash').hidden;
+    const ambOn = !vhs && (CV.on || inGame);
+    if (amb){ const tgt = ambOn ? (CORI.h ? .45 : 1) : .0001; if (Math.abs((amb._t || 1) - tgt) > .001){ amb.gain.setTargetAtTime(tgt, now, ambOn ? .5 : .25); amb._t = tgt; } }
+    const on = !vhs && (CV.on || !['title','over','intro','statua','outro','royal','royalIn','royalOut','back98'].includes(S.mode)) && $('ovStart').hidden && $('ovEnd').hidden && $('splash').hidden && !PAUSED;
+    if (!on){ BEAT.bpm = 0; if (CORI.h){ stopSnd(vhs ? Object.assign(CORI.h) : CORI.h, vhs ? .3 : 1.2); CORI.h = null; } CORI.next = now + 1.5; return; }
     // quando parla il telecronista i cori si abbassano
-    if (CORI.h){ const talk = voxSrc.some(h => h.end > now); CORI.h.g.gain.setTargetAtTime(talk ? .5 : 1.3, now, .25); if (amb) amb.gain.setTargetAtTime(.45, now, .5); }
+    if (CORI.h){ const talk = voxSrc.some(h => h.end > now); CORI.h.g.gain.setTargetAtTime(talk ? .5 : 1.3, now, .25); }
     if (CORI.h && now < CORI.end) return;
     if (CORI.h){ CORI.h = null; BEAT.bpm = 0; CORI.next = now + (CV.on ? .6 : 1.5 + Math.random()*3.5); }
     if (now < CORI.next) return;
@@ -3785,7 +3790,9 @@
     restart($('spH1'), 'in'); restart($('spH2'), 'in');
     musicSafe();
   }
-  function closeSplash(){ clearSplashTimers(); SPL.stage = 'done'; $('splash').hidden = true; fit(); }
+  function closeSplash(){ clearSplashTimers(); SPL.stage = 'done'; $('splash').hidden = true; fit();
+    // il tocco che chiude la schermata iniziale non deve "cadere" sui pulsanti del menu sotto (es. CURVA SUD)
+    const m = $('ovStart'); m.style.pointerEvents = 'none'; setTimeout(() => { m.style.pointerEvents = ''; }, 600); }
   // telefono: al primo tocco prova a nascondere le barre del browser (non tutti i telefoni lo permettono)
   let fsTried = false;
   function goFull(){
