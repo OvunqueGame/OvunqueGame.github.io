@@ -185,6 +185,36 @@
   @keyframes drop{0%{transform:translateY(-70vh)}100%{transform:none}}
 
 
+
+  /* ---------- dentro lo scatolone: raccoglitore + cassetta VHS ---------- */
+  .box{position:fixed;inset:0;z-index:28;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3vmin;
+    background:#b8854a;background-image:linear-gradient(90deg,rgba(0,0,0,.25),transparent 12%,transparent 88%,rgba(0,0,0,.25)),repeating-linear-gradient(0deg,rgba(90,50,10,.12) 0 2px,transparent 2px 7px);
+    box-shadow:inset 0 0 80px rgba(60,30,5,.6);font-family:"Comic Sans MS",cursive}
+  .box[hidden]{display:none}
+  .box>.albX{position:absolute;top:max(8px,env(safe-area-inset-top));left:12px}
+  .boxTitle{font-family:"Marker Felt","Comic Sans MS",cursive;font-weight:900;font-size:clamp(18px,6vmin,40px);color:#1b1b1b;transform:rotate(-2deg);opacity:.85}
+  .boxIn{display:flex;align-items:center;justify-content:center;gap:12vmin;flex-wrap:wrap;padding:0 4vmin}
+  .boxBinder{position:relative;width:min(34vmin,220px);aspect-ratio:.78;border:0;cursor:pointer;border-radius:6px 10px 10px 6px;transform:rotate(-6deg);
+    background:#1f4fb8 radial-gradient(circle at 25% 20%,rgba(255,255,255,.18),transparent 45%);box-shadow:0 12px 24px rgba(0,0,0,.5),inset 14px 0 0 #173e93;transition:transform .15s}
+  .boxBinder .ow{position:absolute;left:10%;right:4%;top:36%;font-family:"Marker Felt","Comic Sans MS",cursive;font-weight:900;color:#fff;font-size:min(5.6vmin,36px);transform:rotate(-7deg);text-shadow:2px 2px 0 #0b1e52}
+  .boxBinder .lb{position:absolute;left:18%;right:8%;top:8%;background:#fff;color:#333;font-size:min(2.6vmin,13px);padding:.4em;transform:rotate(1.5deg)}
+  .boxBinder i{position:absolute;left:14%;right:10%;top:56%;height:4%;background:#8a1c2b;transform:rotate(-5deg);border-radius:3px}
+  .vhsTape{position:relative;width:min(46vmin,300px);aspect-ratio:1.75;border:0;cursor:pointer;border-radius:5px;transform:rotate(5deg);
+    background:#161616;background-image:linear-gradient(180deg,#2a2a2a,#121212);box-shadow:0 12px 24px rgba(0,0,0,.55),inset 0 0 0 3px #0a0a0a;transition:transform .15s}
+  .vhsTape .win{position:absolute;left:22%;right:22%;top:12%;height:30%;background:#3a3a3a;border-radius:4px;display:flex;justify-content:space-around;align-items:center;box-shadow:inset 0 0 0 2px #000}
+  .vhsTape .win i{width:24%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#ddd 0 22%,#4a2a14 24% 100%);box-shadow:0 0 0 2px #000}
+  .vhsTape .lab{position:absolute;left:8%;right:8%;bottom:10%;height:38%;background:#fbfaf3;border-radius:2px;transform:rotate(-1deg);display:flex;flex-direction:column;align-items:center;justify-content:center;
+    box-shadow:0 1px 2px rgba(0,0,0,.4);background-image:repeating-linear-gradient(0deg,transparent 0 22%,rgba(30,80,200,.25) 22% 24%)}
+  .vhsTape .lab b{font-family:"Marker Felt","Comic Sans MS",cursive;color:#1d3fae;font-size:min(3.8vmin,22px);letter-spacing:.02em}
+  .vhsTape .lab em{font-style:normal;font-family:"Comic Sans MS",cursive;color:#8a1c2b;font-size:min(2.4vmin,13px)}
+  .vhsTape .brand{position:absolute;right:6%;top:3%;font-family:var(--px);font-size:min(1.6vmin,8px);color:#888}
+  .boxBinder:active,.vhsTape:active{transform:scale(.96)}
+  .boxHint{font-family:var(--px);font-size:clamp(7px,1.8vmin,10px);color:#2a1606;opacity:.8;animation:cvPulse 2s infinite}
+  .vhsPlay{position:absolute;inset:0;z-index:5;background:rgba(5,4,3,.96);display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .vhsPlay[hidden]{display:none}
+  .vhsPlay video{width:min(94vw,calc((100vh - 90px)*4/3)) !important;max-width:none !important;height:auto !important;max-height:calc(100vh - 90px);background:#000;filter:contrast(1.05) saturate(.9)}
+  .vhsPlay p{color:#f1e4c1;margin:8px 0 0;font-size:clamp(11px,2.6vmin,18px)}
+  .vhsX{position:absolute;top:max(8px,env(safe-area-inset-top));right:10px}
   /* ---------- album della curva ---------- */
   .cvAlb{position:absolute;left:50%;bottom:6%;transform:translateX(-50%);z-index:3;cursor:pointer;border:0;padding:.7em 1.6em .55em;
     background:linear-gradient(#fbf8ef,#e9e3d2);color:#1d4fd0;font-family:"Marker Felt","Comic Sans MS","Segoe Print","Bradley Hand",cursive;
@@ -337,9 +367,19 @@
       <div class="subs" id="subs" aria-live="polite" hidden></div>
       <div class="gbtns skip" id="skipBox" hidden><button type="button" id="btnSkipScene" aria-label="Salta il filmato">SALTA ▶▶</button></div>
       <div class="cvView" id="cvView" hidden><div class="cvStrip" id="cvStrip"><video id="cvVid" muted loop playsinline webkit-playsinline preload="auto" poster="cv/curva.jpg"></video><button class="cvBox" id="cvBox" type="button" aria-label="Materiale curva"></button></div><div class="cvHint" id="cvHint">▼ SCORRI GIÙ ▼</div></div>
+      <div class="box" id="ovBox" hidden>
+        <button type="button" class="albX" id="boxBack">◀ CURVA</button>
+        <div class="boxTitle">MATERIALE CURVA</div>
+        <div class="boxIn">
+          <button type="button" class="boxBinder" id="boxBinder"><span class="ow">OVUNQUE</span><span class="lb">ROBA DELLA CURVA</span><i></i></button>
+          <button type="button" class="vhsTape" id="boxVhs"><span class="win"><i></i><i></i></span><span class="lab"><b>MANFREDONIA – CAVESE</b><em>24 aprile 2005 · Curva Sud</em></span><span class="brand">VHS · E-180</span></button>
+        </div>
+        <div class="boxHint">TOCCA IL RACCOGLITORE O LA CASSETTA</div>
+        <div class="vhsPlay" id="vhsPlay" hidden><video id="vhsVid" controls playsinline webkit-playsinline preload="none"></video><p>24 aprile 2005 · Manfredonia – Cavese</p><button type="button" class="albX vhsX" id="vhsClose">✕</button></div>
+      </div>
       <div class="alb" id="ovAlbum" hidden>
         <div class="albTop"><button type="button" class="albX" id="albClose">✕ CHIUDI</button>
-          <nav class="albTabs" id="albTabs"><button type="button" data-ch="st">ADESIVI</button><button type="button" data-ch="fz">FANZINE</button><button type="button" data-ch="ph">FOTO</button><button type="button" data-ch="vd">VIDEO</button></nav></div>
+          <nav class="albTabs" id="albTabs"><button type="button" data-ch="st">ADESIVI</button><button type="button" data-ch="fz">FANZINE</button><button type="button" data-ch="ph">FOTO</button></nav></div>
         <div class="albStage" id="albStage"></div>
         <button type="button" class="albNav prev" id="albPrev" aria-label="indietro">◀</button><button type="button" class="albNav next" id="albNext" aria-label="avanti">▶</button>
         <div class="albNum" id="albNum"></div>
@@ -2648,9 +2688,9 @@
   const CV = { on: false, y: 0, drag: null, auto: 1, t: 0 };
 
   /* ---------- album della curva: si apre dallo striscione in CURVA SUD ---------- */
-  const ALB = { items: [["st", "st01.jpg", "Tessera Teste Matte 2003-2004"], ["st", "st02.jpg", "Tessera Teste Matte 1991 · Curva Sud P. Cotugno"], ["st", "st03.jpg", "Il foglio degli adesivi"], ["st", "st04.jpg", ""], ["st", "st05.jpg", ""], ["st", "st06.jpg", ""], ["st", "st07.jpg", ""], ["st", "st08.jpg", ""], ["st", "st09.jpg", ""], ["st", "st10.jpg", ""], ["st", "st11.jpg", ""], ["st", "st12.jpg", ""], ["st", "st13.jpg", ""], ["st", "st14.jpg", ""], ["st", "st15.jpg", ""], ["fz", "fz1.jpg", "Il Forbicione · Anno VIII n°2 · pagina 1"], ["fz", "fz2.jpg", "Il Forbicione · Anno VIII n°2 · pagina 2"], ["fz", "fz3.jpg", "Il Forbicione · Anno VIII n°2 · pagina 3"], ["fz", "fz4.jpg", "Il Forbicione · Anno VIII n°2 · pagina 4"], ["ph", "ph01.jpg", "1994-95 · Manfredonia – Tricase"], ["ph", "ph02.jpg", "1998-99 · Manfredonia – Locorotondo · Eccellenza"], ["ph", "ph03.jpg", "1998-99 · Manfredonia – Castellaneta · Eccellenza"], ["ph", "ph04.jpg", "1998-99 · Locorotondo – Manfredonia · Eccellenza"], ["ph", "ph05.jpg", "1998-99 · Manfredonia – Orlandina · finale spareggio promozione"], ["ph", "ph06.jpg", "3 ottobre 1999 · Ferrandina – Manfredonia · Serie D"], ["ph", "ph07.jpg", "3 ottobre 1999 · Ferrandina – Manfredonia · Serie D"], ["ph", "ph08.jpg", "3 ottobre 1999 · Ferrandina – Manfredonia · Serie D"], ["ph", "ph09.jpg", "12 dicembre 1999 · Melfi – Manfredonia · Serie D"], ["ph", "ph10.jpg", "9 aprile 2000 · Manfredonia – Casarano · Serie D"], ["ph", "ph11.jpg", "12 ottobre 2003 · Manfredonia – Pro Vasto · Serie D"], ["ph", "ph12.jpg", "15 febbraio 2004 · Pro Vasto – Manfredonia · Serie D"], ["ph", "ph13.jpg", "21 marzo 2004 · Grottaglie – Manfredonia"], ["ph", "ph14.jpg", "2 maggio 2004 · Manfredonia – Terracina · Serie D"], ["ph", "ph15.jpg", "2 maggio 2004 · Manfredonia – Terracina · Serie D"], ["ph", "ph16.jpg", "2 maggio 2004 · Manfredonia – Terracina · Serie D"], ["ph", "ph17.jpg", "5 febbraio 2006 · Manfredonia – Frosinone · Serie C1"], ["ph", "ph18.jpg", "5 febbraio 2006 · Manfredonia – Frosinone · Serie C1"], ["ph", "ph19.jpg", "Curva Sud"], ["vd", "vd01.mp4", "24 aprile 2005 · Manfredonia – Cavese"]], pages: [], i: -1, box: -1, z: 1, px: 0, py: 0, built: false };
+  const ALB = { items: [["st", "st01.jpg", "Tessera Teste Matte 2003-2004"], ["st", "st02.jpg", "Tessera Teste Matte 1991 · Curva Sud P. Cotugno"], ["st", "st03.jpg", "Il foglio degli adesivi"], ["st", "st04.jpg", ""], ["st", "st05.jpg", ""], ["st", "st06.jpg", ""], ["st", "st07.jpg", ""], ["st", "st08.jpg", ""], ["st", "st09.jpg", ""], ["st", "st10.jpg", ""], ["st", "st11.jpg", ""], ["st", "st12.jpg", ""], ["st", "st13.jpg", ""], ["st", "st14.jpg", ""], ["st", "st15.jpg", ""], ["fz", "fz1.jpg", "Il Forbicione · Anno VIII n°2 · pagina 1"], ["fz", "fz2.jpg", "Il Forbicione · Anno VIII n°2 · pagina 2"], ["fz", "fz3.jpg", "Il Forbicione · Anno VIII n°2 · pagina 3"], ["fz", "fz4.jpg", "Il Forbicione · Anno VIII n°2 · pagina 4"], ["ph", "ph01.jpg", "1994-95 · Manfredonia – Tricase"], ["ph", "ph02.jpg", "1998-99 · Manfredonia – Locorotondo · Eccellenza"], ["ph", "ph03.jpg", "1998-99 · Manfredonia – Castellaneta · Eccellenza"], ["ph", "ph04.jpg", "1998-99 · Locorotondo – Manfredonia · Eccellenza"], ["ph", "ph05.jpg", "1998-99 · Manfredonia – Orlandina · finale spareggio promozione"], ["ph", "ph06.jpg", "3 ottobre 1999 · Ferrandina – Manfredonia · Serie D"], ["ph", "ph07.jpg", "3 ottobre 1999 · Ferrandina – Manfredonia · Serie D"], ["ph", "ph08.jpg", "3 ottobre 1999 · Ferrandina – Manfredonia · Serie D"], ["ph", "ph09.jpg", "12 dicembre 1999 · Melfi – Manfredonia · Serie D"], ["ph", "ph10.jpg", "9 aprile 2000 · Manfredonia – Casarano · Serie D"], ["ph", "ph11.jpg", "12 ottobre 2003 · Manfredonia – Pro Vasto · Serie D"], ["ph", "ph12.jpg", "15 febbraio 2004 · Pro Vasto – Manfredonia · Serie D"], ["ph", "ph13.jpg", "21 marzo 2004 · Grottaglie – Manfredonia"], ["ph", "ph14.jpg", "2 maggio 2004 · Manfredonia – Terracina · Serie D"], ["ph", "ph15.jpg", "2 maggio 2004 · Manfredonia – Terracina · Serie D"], ["ph", "ph16.jpg", "2 maggio 2004 · Manfredonia – Terracina · Serie D"], ["ph", "ph17.jpg", "5 febbraio 2006 · Manfredonia – Frosinone · Serie C1"], ["ph", "ph18.jpg", "5 febbraio 2006 · Manfredonia – Frosinone · Serie C1"], ["ph", "ph19.jpg", "Curva Sud"]], pages: [], i: -1, box: -1, z: 1, px: 0, py: 0, built: false };
   function albBuild(){
-    if (ALB.built) return; ALB.built = true; setTimeout(() => ALB.pages.push(...albVidPages()), 0);
+    if (ALB.built) return; ALB.built = true;
     const by = k => ALB.items.map((it, n) => ({ k: it[0], src: 'alb/' + it[1], cap: it[2], n })).filter(x => x.k === k);
     const st = by('st'), fz = by('fz'), ph = by('ph');
     // adesivi: 4 per pagina, sparsi e un po' storti; fanzine: una pagina per foglio; foto: 2 per pagina con gli angolini e la didascalia
@@ -2724,7 +2764,7 @@
     c.addEventListener('click', () => albShow(0, 1)); stage.appendChild(c);
     ALB.i = -1; albShow(-1, 1);
   }
-  function albClose(){ try { $('albBoxVid').pause(); } catch(e) {} ALB.playing = false; $('ovAlbum').hidden = true; $('albBox').hidden = true; if (CV.on) $('cvBar').hidden = false; }
+  function albClose(){ try { $('albBoxVid').pause(); } catch(e) {} ALB.playing = false; const back = !$('ovAlbum').hidden && CV.on; $('ovAlbum').hidden = true; $('albBox').hidden = true; if (back) { $('ovBox').hidden = false; return; } if (CV.on) $('cvBar').hidden = false; }
   function albZoom(n){
     if (n < 0 || n >= ALB.items.length) return;
     ALB.box = n; ALB.z = 1; ALB.px = ALB.py = 0;
@@ -2764,9 +2804,23 @@
     $('albBoxVid').addEventListener('play', () => { ALB.playing = true; });
     addEventListener('resize', () => { if ($('ovAlbum').hidden || ALB.i < 0) return; const st = $('albStage'), o = st.querySelector('.albPage:not(.out):not(.outR)'); if (!o) return; o.replaceWith(albPageEl(ALB.pages[ALB.i])); });
   })();
+
+  /* ---------- lo scatolone ---------- */
+  const BOX = { playing: false };
+  function boxOpen(){ $('ovBox').hidden = false; $('cvBar').hidden = true; }
+  function boxClose(){ vhsStop(); $('ovBox').hidden = true; if (CV.on) $('cvBar').hidden = false; }
+  function vhsStop(){ try { $('vhsVid').pause(); } catch(e) {} $('vhsPlay').hidden = true; ALB.playing = false; }
+  (() => {
+    $('boxBack').addEventListener('click', boxClose);
+    $('boxBinder').addEventListener('click', () => { $('ovBox').hidden = true; albOpen(); });
+    $('boxVhs').addEventListener('click', () => { const v = $('vhsVid'); if (!v.src) v.src = 'alb/vd01.mp4'; $('vhsPlay').hidden = false; ALB.playing = true;
+      try { v.currentTime = 0; const p = v.play(); if (p && p.catch) p.catch(() => {}); } catch(e) {} });
+    $('vhsClose').addEventListener('click', vhsStop);
+    $('vhsVid').addEventListener('ended', () => { ALB.playing = false; });
+  })();
   function curvaMode(on){
     CV.on = on; CV.y = 0; CV.auto = 1; CV.t = 0; CV.drag = null;
-    if (!on) try { albClose(); } catch(e) {}
+    if (!on){ try { albClose(); } catch(e) {} try { boxClose(); } catch(e) {} $('ovBox').hidden = true; }
     $('ovStart').hidden = on; $('cvBar').hidden = !on; $('cvView').hidden = !on;
     try { banner(on ? 'CURVA SUD' : 'PRONTO', on ? 'scorri giù: c\u2019è lo scatolone' : ''); } catch(e) {}
     const vid = $('cvVid');
@@ -2936,11 +2990,12 @@
     ['pointerup','pointercancel'].forEach(n => v.addEventListener(n, () => { CV.drag = null; }));
     v.addEventListener('wheel', e => { const span = cvSpan(); if (!span) return; CV.y = Math.max(0, Math.min(1, CV.y + e.deltaY/span)); e.preventDefault(); }, { passive: false });
     $('cvBox').addEventListener('pointerdown', e => e.stopPropagation());
-    $('cvBox').addEventListener('click', e => { e.stopPropagation(); albOpen(); }); }
+    $('cvBox').addEventListener('click', e => { e.stopPropagation(); boxOpen(); }); }
   addEventListener('keydown', e => {
     if (!$('ovAlbum').hidden){ if (!$('albBox').hidden){ if (e.code === 'ArrowLeft') albZoom(ALB.box - 1); else if (e.code === 'ArrowRight') albZoom(ALB.box + 1); else if (e.code === 'Escape') $('albBox').hidden = true; }
       else if (e.code === 'ArrowLeft') albShow(ALB.i - 1, -1); else if (e.code === 'ArrowRight') albShow(ALB.i + 1, 1); else if (e.code === 'Escape') albClose(); e.preventDefault(); return; }
-    if (CV.on){ if (e.code === 'ArrowUp'){ CV.y = Math.max(0, CV.y - .15); } else if (e.code === 'ArrowDown'){ CV.y = Math.min(1, CV.y + .15); } else if (e.code === 'Enter' || e.code === 'Space'){ albOpen(); } else if (e.code === 'Escape') curvaMode(false); e.preventDefault(); return; }
+    if (!$('ovBox').hidden){ if (e.code === 'Escape') { if (!$('vhsPlay').hidden) vhsStop(); else boxClose(); } e.preventDefault(); return; }
+    if (CV.on){ if (e.code === 'ArrowUp'){ CV.y = Math.max(0, CV.y - .15); } else if (e.code === 'ArrowDown'){ CV.y = Math.min(1, CV.y + .15); } else if (e.code === 'Enter' || e.code === 'Space'){ boxOpen(); } else if (e.code === 'Escape') curvaMode(false); e.preventDefault(); return; }
     if (e.code === 'Space' || e.code === 'Enter'){
       if (!$('splash').hidden){ e.preventDefault(); splashTap(); return; }
       if (document.activeElement && document.activeElement.tagName === 'BUTTON') return;
