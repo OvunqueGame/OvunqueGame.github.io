@@ -87,9 +87,13 @@
     color:var(--white);font-family:var(--px);font-size:clamp(7px,1.25vw,13px);line-height:1.75;padding:.8em 1em .7em;
     pointer-events:none;text-shadow:1px 1px 0 #000;box-shadow:3px 3px 0 rgba(0,0,0,.5)}
   .subs[hidden]{display:none}
-  .cvView{position:absolute;inset:0;overflow:hidden;background:#05081a;touch-action:none;cursor:grab;z-index:1}
+  .cvView{position:fixed;inset:0;overflow:hidden;background:#05081a;touch-action:none;cursor:grab;z-index:15}
+  #cvBar{position:fixed !important;z-index:16;top:max(8px,env(safe-area-inset-top)) !important;left:12px !important;right:auto !important;bottom:auto !important;transform:none !important;font-size:12px !important}
   .cvView[hidden]{display:none}
-  .cvStrip{position:absolute;top:0;left:0;height:100%;will-change:transform}
+  .cvStrip{position:absolute;top:0;left:0;width:100%;will-change:transform}
+  .cvStrip video{display:block;width:100% !important;height:auto !important;max-width:none !important;pointer-events:none}
+  .cvBox{position:absolute;left:37.5%;top:79%;width:23%;height:20%;border:0;background:transparent;cursor:pointer;border-radius:10px;animation:boxGlow 2.4s ease-in-out infinite}
+  @keyframes boxGlow{0%,70%,100%{box-shadow:none}82%{box-shadow:0 0 0 3px #ffd23f,0 0 24px 6px rgba(255,210,63,.7)}}
   .cvStrip img{position:absolute;top:0;left:0;height:100% !important;width:auto !important;max-width:none !important;max-height:none !important;opacity:0;pointer-events:none;user-select:none;-webkit-user-drag:none}
   .cvStrip img.on{opacity:1}
   .cvHint{position:absolute;left:0;right:0;bottom:8%;text-align:center;font-family:var(--px);color:#fff;font-size:clamp(9px,2.4vw,18px);line-height:1;
@@ -180,6 +184,114 @@
   .sp-title h2.in{animation:bpin .5s steps(5) .6s both}
   @keyframes drop{0%{transform:translateY(-70vh)}100%{transform:none}}
 
+
+
+  /* ---------- dentro lo scatolone: raccoglitore + cassetta VHS ---------- */
+  .box{position:fixed;inset:0;z-index:28;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3vmin;
+    background:#b8854a;background-image:linear-gradient(90deg,rgba(0,0,0,.25),transparent 12%,transparent 88%,rgba(0,0,0,.25)),repeating-linear-gradient(0deg,rgba(90,50,10,.12) 0 2px,transparent 2px 7px);
+    box-shadow:inset 0 0 80px rgba(60,30,5,.6);font-family:"Comic Sans MS",cursive}
+  .box[hidden]{display:none}
+  .box>.albX{position:absolute;top:max(8px,env(safe-area-inset-top));left:12px}
+  .boxTitle{font-family:"Marker Felt","Comic Sans MS",cursive;font-weight:900;font-size:clamp(18px,6vmin,40px);color:#1b1b1b;transform:rotate(-2deg);opacity:.85}
+  .boxIn{display:flex;align-items:center;justify-content:center;gap:12vmin;flex-wrap:wrap;padding:0 4vmin}
+  .boxBinder{position:relative;width:min(34vmin,220px);aspect-ratio:.78;border:0;cursor:pointer;border-radius:6px 10px 10px 6px;transform:rotate(-6deg);
+    background:#1f4fb8 radial-gradient(circle at 25% 20%,rgba(255,255,255,.18),transparent 45%);box-shadow:0 12px 24px rgba(0,0,0,.5),inset 14px 0 0 #173e93;transition:transform .15s}
+  .boxBinder .ow{position:absolute;left:10%;right:4%;top:36%;font-family:"Marker Felt","Comic Sans MS",cursive;font-weight:900;color:#fff;font-size:min(5.6vmin,36px);transform:rotate(-7deg);text-shadow:2px 2px 0 #0b1e52}
+  .boxBinder .lb{position:absolute;left:18%;right:8%;top:8%;background:#fff;color:#333;font-size:min(2.6vmin,13px);padding:.4em;transform:rotate(1.5deg)}
+  .boxBinder i{position:absolute;left:14%;right:10%;top:56%;height:4%;background:#8a1c2b;transform:rotate(-5deg);border-radius:3px}
+  .vhsTape{position:relative;width:min(46vmin,300px);aspect-ratio:1.75;border:0;cursor:pointer;border-radius:5px;transform:rotate(5deg);
+    background:#161616;background-image:linear-gradient(180deg,#2a2a2a,#121212);box-shadow:0 12px 24px rgba(0,0,0,.55),inset 0 0 0 3px #0a0a0a;transition:transform .15s}
+  .vhsTape .win{position:absolute;left:22%;right:22%;top:12%;height:30%;background:#3a3a3a;border-radius:4px;display:flex;justify-content:space-around;align-items:center;box-shadow:inset 0 0 0 2px #000}
+  .vhsTape .win i{width:24%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#ddd 0 22%,#4a2a14 24% 100%);box-shadow:0 0 0 2px #000}
+  .vhsTape .lab{position:absolute;left:8%;right:8%;bottom:10%;height:38%;background:#fbfaf3;border-radius:2px;transform:rotate(-1deg);display:flex;flex-direction:column;align-items:center;justify-content:center;
+    box-shadow:0 1px 2px rgba(0,0,0,.4);background-image:repeating-linear-gradient(0deg,transparent 0 22%,rgba(30,80,200,.25) 22% 24%)}
+  .vhsTape .lab b{font-family:"Marker Felt","Comic Sans MS",cursive;color:#1d3fae;font-size:min(3.8vmin,22px);letter-spacing:.02em}
+  .vhsTape .lab em{font-style:normal;font-family:"Comic Sans MS",cursive;color:#8a1c2b;font-size:min(2.4vmin,13px)}
+  .vhsTape .brand{position:absolute;right:6%;top:3%;font-family:var(--px);font-size:min(1.6vmin,8px);color:#888}
+  .boxBinder:active,.vhsTape:active{transform:scale(.96)}
+  .boxHint{font-family:var(--px);font-size:clamp(7px,1.8vmin,10px);color:#2a1606;opacity:.8;animation:cvPulse 2s infinite}
+  .vhsPlay{position:absolute;inset:0;z-index:5;background:rgba(5,4,3,.96);display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .vhsPlay[hidden]{display:none}
+  .vhsPlay video{width:min(94vw,calc((100vh - 90px)*4/3)) !important;max-width:none !important;height:auto !important;max-height:calc(100vh - 90px);background:#000;filter:contrast(1.05) saturate(.9)}
+  .vhsPlay p{color:#f1e4c1;margin:8px 0 0;font-size:clamp(11px,2.6vmin,18px)}
+  .vhsX{position:absolute;top:max(8px,env(safe-area-inset-top));right:10px}
+  /* ---------- album della curva ---------- */
+  .cvAlb{position:absolute;left:50%;bottom:6%;transform:translateX(-50%);z-index:3;cursor:pointer;border:0;padding:.7em 1.6em .55em;
+    background:linear-gradient(#fbf8ef,#e9e3d2);color:#1d4fd0;font-family:"Marker Felt","Comic Sans MS","Segoe Print","Bradley Hand",cursive;
+    font-size:clamp(13px,min(4.2vw,5.6vh),30px);font-weight:900;letter-spacing:.04em;line-height:1.05;text-shadow:1px 1px 0 #5ec8ff;
+    box-shadow:0 6px 0 rgba(0,0,0,.35),inset 0 -3px 0 rgba(0,0,0,.08);clip-path:polygon(0 4%,100% 0,98% 52%,100% 100%,2% 96%,0 48%);
+    animation:cvSway 3.2s ease-in-out infinite,cvPulse 2.6s ease-in-out infinite}
+  .cvAlb i{display:block;font-style:normal;font-size:.42em;color:#8a1c2b;letter-spacing:.2em;margin-top:.25em;font-family:var(--px)}
+  .cvAlb::before,.cvAlb::after{content:'';position:absolute;top:6px;width:7px;height:7px;border-radius:50%;background:#555;box-shadow:0 0 0 2px #ccc}
+  .cvAlb::before{left:8px}.cvAlb::after{right:8px}
+  @keyframes cvSway{0%,100%{transform:translateX(-50%) rotate(-1.6deg)}50%{transform:translateX(-50%) rotate(1.6deg)}}
+  @keyframes cvPulse{0%,82%,100%{filter:none}88%{filter:brightness(1.18) drop-shadow(0 0 10px #ffd23f)}}
+  .alb{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;overflow:hidden;
+    background:#3d4a5c radial-gradient(ellipse at 50% 35%,#5d6d82,#2b3442 75%);font-family:"Comic Sans MS","Segoe Print","Bradley Hand",cursive;color:#2b2116}
+  .alb[hidden]{display:none}
+  .albTop{width:100%;display:flex;align-items:center;gap:10px;padding:max(6px,env(safe-area-inset-top)) 12px 4px;z-index:4}
+  .albX{font-family:var(--px);font-size:clamp(8px,2.2vmin,12px);background:#05081a;color:#fff;border:2px solid #fff;padding:8px 10px;cursor:pointer}
+  .albTabs{display:flex;gap:6px;margin-left:auto}
+  .albTabs button{font-family:var(--px);font-size:clamp(7px,2vmin,11px);padding:8px 9px;border:0;cursor:pointer;background:#ffd23f;color:#05081a;
+    border-radius:6px 6px 0 0;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}
+  .albTabs button.on{background:#fff;color:#1d4fd0}
+  .albStage{position:relative;flex:1;width:100%;perspective:1800px;display:flex;align-items:center;justify-content:center;touch-action:pan-y}
+  .albPage{position:absolute;width:min(90vw,calc((100vh - 84px)*1.42));height:min(calc(90vw/1.42),calc(100vh - 84px));
+    background:#f4f4f0;background-image:linear-gradient(115deg,rgba(255,255,255,.55) 0 8%,transparent 14% 60%,rgba(255,255,255,.35) 66%,transparent 72%),
+      repeating-linear-gradient(0deg,rgba(0,0,0,.025) 0 1px,transparent 1px 4px);
+    box-shadow:0 10px 24px rgba(0,0,0,.5),inset 0 0 0 6px rgba(255,255,255,.6),inset 0 0 0 7px rgba(0,0,0,.08);border-radius:2px;transform-origin:left center;transition:transform .45s ease,opacity .45s ease;backface-visibility:hidden;overflow:hidden}
+  .albPage::before{content:'';position:absolute;left:1.6%;top:0;bottom:0;width:14px;background:radial-gradient(circle at 50% 50%,#2b3442 5px,transparent 6px) 0 18%/14px 33% repeat-y;z-index:3}
+  .albPage::after{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.28),transparent 30%,transparent 70%,rgba(255,255,255,.18));pointer-events:none;z-index:4}
+  @media (orientation: portrait){ .albPage{width:92vw;height:min(calc(92vw*1.45),calc(100vh - 130px))} .alb .albStage~.albNav{top:auto;bottom:max(28px,calc(env(safe-area-inset-bottom) + 24px));transform:none} }
+  .albPage.out{transform:rotateY(-105deg);opacity:0}
+  .albPage.outR{transform:translateX(30%) rotate(3deg);opacity:0}
+  .albPage h3{position:absolute;left:0;right:0;top:2.5%;margin:0;text-align:center;font-family:"Marker Felt","Comic Sans MS",cursive;font-size:clamp(15px,4.6vmin,32px);color:#1d4fd0;letter-spacing:.02em;transform:rotate(-1.5deg)}
+  .albPage .credit{position:absolute;right:3%;bottom:2.5%;font-size:clamp(8px,1.8vmin,12px);color:#555;opacity:.85}
+  .albIt{position:absolute;cursor:zoom-in;transition:transform .2s}
+  .albIt img{display:block;width:100% !important;height:100% !important;max-width:none !important;object-fit:contain}
+  .albIt.st img{filter:drop-shadow(2px 3px 2px rgba(0,0,0,.45))}
+  .albIt.ph{background:#fff;padding:2.2% 2.2% 0;box-shadow:2px 4px 8px rgba(0,0,0,.4)}
+  .albIt.ph img{height:auto !important;max-height:100%}
+  .albIt .cap{font-family:"Marker Felt","Comic Sans MS",cursive;font-size:clamp(9px,2.3vmin,16px);color:#1d4fd0;text-align:center;line-height:1.15;padding:.35em .2em .45em}
+  .albIt .cn{position:absolute;width:22%;height:8%;background:rgba(245,240,205,.7);box-shadow:0 1px 2px rgba(0,0,0,.18)}
+  .albIt .cn.a{left:-6%;top:1%;transform:rotate(-38deg)}.albIt .cn.b{right:-6%;top:1%;transform:rotate(38deg)}
+  .albIt .cn.c{display:none}.albIt .cn.d{display:none}
+  .albIt.fz{box-shadow:3px 5px 10px rgba(0,0,0,.45)}
+  .albIt .tape{position:absolute;width:30%;height:9%;background:rgba(240,235,200,.65);box-shadow:0 1px 2px rgba(0,0,0,.2)}
+  .albIt:active{transform:scale(.98)}
+  .albIt.vd{cursor:pointer}
+  .vhs{position:relative;width:100%;height:100%;background:#151515;border-radius:6px;box-shadow:3px 6px 12px rgba(0,0,0,.5);padding:5%;display:flex;flex-direction:column;gap:4%}
+  .vhs img{width:100% !important;height:72% !important;max-width:none !important;object-fit:cover;border:4px solid #333;filter:saturate(.8) contrast(1.1)}
+  .vhs b{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-size:clamp(22px,7vmin,54px);color:#fff;text-shadow:0 0 12px #000}
+  .vhs .vlab{background:#fbf8ef;color:#1d4fd0;font-family:"Marker Felt","Comic Sans MS",cursive;font-size:clamp(10px,2.6vmin,18px);text-align:center;padding:.4em;transform:rotate(-1deg)}
+  .albCover{position:absolute;inset:0;margin:auto;width:min(80vw,calc((100vh - 120px)*.78));height:min(calc(80vw/.78),calc(100vh - 120px));cursor:pointer;container-type:inline-size;
+    background:#1f4fb8;background-image:radial-gradient(circle at 25% 20%,rgba(255,255,255,.18),transparent 45%),radial-gradient(circle at 80% 85%,rgba(0,0,0,.25),transparent 50%),
+      repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 2px,transparent 2px 6px);
+    border-radius:6px 10px 10px 6px;box-shadow:0 14px 30px rgba(0,0,0,.6),inset 18px 0 0 #173e93,inset 20px 0 0 rgba(255,255,255,.15),inset 0 0 0 3px rgba(0,0,0,.25);
+    overflow:hidden;transform-origin:left center;transition:transform .6s ease,opacity .6s ease}
+  .albCover .ow{position:absolute;left:8%;right:2%;top:28%;text-align:center;font-family:"Marker Felt","Comic Sans MS",cursive;font-weight:900;
+    font-size:17cqw;color:#fff;transform:rotate(-7deg);white-space:nowrap;letter-spacing:.02em;text-shadow:2px 2px 0 #0b1e52;line-height:1}
+  .albCover .ow::after{content:'';display:block;height:.1em;margin:.12em 8% 0;background:#8a1c2b;border-radius:3px;transform:rotate(1.5deg)}
+  .albCover .lbl{position:absolute;left:16%;right:8%;top:7%;padding:.6em .4em;background:#fff;border:2px solid #ccc;text-align:center;color:#333;
+    font-family:"Comic Sans MS",cursive;font-size:5cqw;line-height:1.25;transform:rotate(1.5deg);box-shadow:0 2px 3px rgba(0,0,0,.3)}
+  .albCover .stk{position:absolute;filter:drop-shadow(2px 3px 2px rgba(0,0,0,.45))}
+  .albCover .stk img{display:block;width:100% !important;height:auto !important;max-width:none !important}
+  .albCover .tp{position:absolute;width:24%;height:5%;background:rgba(245,240,205,.7)}
+  .albCover em{position:absolute;left:0;right:0;bottom:3%;text-align:center;font-style:normal;font-family:var(--px);font-size:clamp(7px,1.8vmin,11px);color:#fff;animation:cvPulse 2s infinite}
+  .albCover.open{transform:rotateY(-110deg);opacity:0;pointer-events:none}
+  .albNav{position:absolute;top:50%;transform:translateY(-50%);z-index:5;font-family:var(--px);font-size:clamp(12px,3vmin,20px);width:clamp(36px,7vmin,56px);height:clamp(36px,7vmin,56px);
+    border:2px solid #fff;background:rgba(5,8,26,.7);color:#fff;cursor:pointer}
+  .albNav.prev{left:8px}.albNav.next{right:8px}.albNav[disabled]{opacity:.25;pointer-events:none}
+  .albNum{font-family:var(--px);font-size:clamp(7px,1.8vmin,10px);color:#fff;padding:4px 0 max(6px,env(safe-area-inset-bottom))}
+  .albBox{position:absolute;inset:0;z-index:10;background:rgba(5,4,3,.94);display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .albBox[hidden]{display:none}
+  .albBoxIn{width:100%;flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;touch-action:none}
+  .albBoxIn img{max-width:94vw;max-height:calc(100vh - 90px);width:auto !important;height:auto !important;transition:transform .2s;cursor:zoom-in;user-select:none;-webkit-user-drag:none}
+  .albBoxIn.z img{cursor:grab}
+  .albBoxIn video{max-width:94vw;max-height:calc(100vh - 90px);width:min(94vw,calc((100vh - 90px)*4/3)) !important;height:auto !important;background:#000}
+  .albBoxIn video[hidden],.albBoxIn img[hidden]{display:none}
+  .albBox p{margin:0;padding:8px 60px max(12px,env(safe-area-inset-bottom));color:#f1e4c1;font-size:clamp(11px,2.6vmin,18px);text-align:center}
+  .boxX{position:absolute;top:max(8px,env(safe-area-inset-top));right:10px;z-index:11}
   /* menu: pagina a sé, pulita, sopra tutto (non più trasparente sopra il campo) */
   #ovStart{position:fixed;inset:0;z-index:20;justify-content:safe center;overflow-y:auto;gap:12px;padding:max(16px,env(safe-area-inset-top)) 16px 20px;
     background:linear-gradient(rgba(5,8,22,.93),rgba(5,8,22,.97)),url(stadio.jpg) center/cover}
@@ -191,6 +303,9 @@
   #ovStart .mode span{font-size:clamp(7px,min(2.4vw,1.8vh),10px);color:#aab3d6}
   #ovStart #btnCurva{border-color:var(--line)} #ovStart #btnCurva b{color:var(--line)}
   #ovStart .audsel{width:min(100%,460px);justify-content:center}
+  #ovStart #btnInstall{font-size:clamp(8px,min(2.6vw,2.2vh),11px);padding:8px 14px}
+  #ovInstall{position:fixed;inset:0;z-index:21;overflow-y:auto;justify-content:safe center;padding:16px;background:linear-gradient(rgba(5,8,22,.95),rgba(5,8,22,.98)),url(stadio.jpg) center/cover}
+  .inst{text-align:left;max-width:460px;line-height:1.9;font-size:clamp(7px,min(2.4vw,2.2vh),10px)} .inst p{margin:0 0 1.1em} .inst b{color:var(--yellow)}
   #ovStart .cmds{width:min(100%,460px);max-width:none;opacity:.75}
   @media (orientation: landscape) and (max-height: 560px){
     #ovStart{gap:6px;padding:8px 16px}
@@ -251,7 +366,26 @@
       <canvas id="c" width="1256" height="941" aria-label="Campo di gioco"></canvas>
       <div class="subs" id="subs" aria-live="polite" hidden></div>
       <div class="gbtns skip" id="skipBox" hidden><button type="button" id="btnSkipScene" aria-label="Salta il filmato">SALTA ▶▶</button></div>
-      <div class="cvView" id="cvView" hidden><div class="cvStrip" id="cvStrip"></div><div class="cvHint" id="cvHint">◀ SCORRI ▶</div></div>
+      <div class="cvView" id="cvView" hidden><div class="cvStrip" id="cvStrip"><video id="cvVid" muted loop playsinline webkit-playsinline preload="auto" poster="cv/curva.jpg"></video><button class="cvBox" id="cvBox" type="button" aria-label="Materiale curva"></button></div><div class="cvHint" id="cvHint">▼ SCORRI GIÙ ▼</div></div>
+      <div class="box" id="ovBox" hidden>
+        <button type="button" class="albX" id="boxBack">◀ CURVA</button>
+        <div class="boxTitle">MATERIALE CURVA</div>
+        <div class="boxIn">
+          <button type="button" class="boxBinder" id="boxBinder"><span class="ow">OVUNQUE</span><span class="lb">ROBA DELLA CURVA</span><i></i></button>
+          <button type="button" class="vhsTape" id="boxVhs"><span class="win"><i></i><i></i></span><span class="lab"><b>MANFREDONIA – CAVESE</b><em>24 aprile 2005 · Curva Sud</em></span><span class="brand">VHS · E-180</span></button>
+        </div>
+        <div class="boxHint">TOCCA IL RACCOGLITORE O LA CASSETTA</div>
+        <div class="vhsPlay" id="vhsPlay" hidden><video id="vhsVid" controls playsinline webkit-playsinline preload="none"></video><p>24 aprile 2005 · Manfredonia – Cavese</p><button type="button" class="albX vhsX" id="vhsClose">✕</button></div>
+      </div>
+      <div class="alb" id="ovAlbum" hidden>
+        <div class="albTop"><button type="button" class="albX" id="albClose">✕ CHIUDI</button>
+          <nav class="albTabs" id="albTabs"><button type="button" data-ch="st">ADESIVI</button><button type="button" data-ch="fz">FANZINE</button><button type="button" data-ch="ph">FOTO</button></nav></div>
+        <div class="albStage" id="albStage"></div>
+        <button type="button" class="albNav prev" id="albPrev" aria-label="indietro">◀</button><button type="button" class="albNav next" id="albNext" aria-label="avanti">▶</button>
+        <div class="albNum" id="albNum"></div>
+        <div class="albBox" id="albBox" hidden><div class="albBoxIn" id="albBoxIn"><img id="albBoxImg" alt=""><video id="albBoxVid" controls playsinline webkit-playsinline preload="none" hidden></video></div><p id="albBoxCap"></p>
+          <button type="button" class="albNav prev" id="boxPrev">◀</button><button type="button" class="albNav next" id="boxNext">▶</button><button type="button" class="albX boxX" id="boxClose">✕</button></div>
+      </div>
       <div class="gbtns" id="cvBar" hidden><button type="button" id="cvExit">◀ MENU</button></div>
       <div class="gbtns" id="gbtns" hidden>
         <button type="button" id="btnPause" aria-label="Pausa">❚❚ PAUSA</button>
@@ -283,6 +417,16 @@
         <div class="big" id="invT">20</div>
         <p id="invSub"></p>
         <div class="btns"><button class="btn gold" id="invYes" type="button">ACCETTA</button><button class="btn blue" id="invNo" type="button">RIFIUTA</button></div>
+      </div>
+      <div class="overlay" id="ovInstall" hidden>
+        <h1>INSTALLA IL GIOCO</h1>
+        <div class="stbox inst">
+          <p id="instNow" hidden>Tocca <b>INSTALLA ORA</b> qui sotto e conferma: l'icona di OVUNQUE comparirà tra le tue app.</p>
+          <p><b>ANDROID</b> (Chrome)<br>1. Tocca i tre puntini <b>⋮</b> in alto a destra<br>2. Scegli <b>Installa app</b> oppure <b>Aggiungi a schermata Home</b><br>3. Conferma con <b>Installa</b></p>
+          <p><b>IPHONE</b> (Safari)<br>1. Tocca il tasto <b>Condividi</b> (quadrato con la freccia in su)<br>2. Scorri e scegli <b>Aggiungi alla schermata Home</b><br>3. Tocca <b>Aggiungi</b></p>
+          <p>Poi apri OVUNQUE dall'icona: parte a tutto schermo, come un'app. Gli aggiornamenti arrivano da soli.</p>
+        </div>
+        <div class="btns"><button class="btn gold" id="instGo" type="button" hidden>INSTALLA ORA</button><button class="btn blue" id="instClose" type="button">CHIUDI</button></div>
       </div>
       <div class="overlay" id="ovStats" hidden>
         <h1>STATISTICHE</h1>
@@ -321,6 +465,7 @@
           <li><b>TIRO</b> 1° tocco il lato, 2° tocco l'altezza</li>
           <li><b>PARATA</b> tocca la porta dove tuffarti</li>
         </ul>
+        <button class="btn blue" id="btnInstall" type="button" hidden>📲 INSTALLA IL GIOCO</button>
         <div class="rotate" aria-hidden="false"><span class="phone"></span><span>Ruota il telefono in orizzontale per giocare meglio</span></div>
       </div>
       <div class="overlay" id="ovMp" hidden>
@@ -2540,33 +2685,162 @@
     ctx.drawImage(fr, 0, 0, fr.naturalWidth, fr.naturalHeight, 0, 0, W, 314);
   }
   /* ---------- modalità CURVA: solo i tifosi ingranditi, cori di continuo, si scorre a destra e sinistra ---------- */
-  const CV = { on: false, x: .5, drag: null, auto: 1, t: 0, hi: null };
-  function curvaMode(on){
-    CV.on = on; CV.x = .42; CV.auto = 1; CV.t = 0; CV.drag = null; CV.fr = -1;
-    $('ovStart').hidden = on; $('cvBar').hidden = !on; $('cvView').hidden = !on;
-    try { banner(on ? 'CURVA SUD' : 'PRONTO', on ? 'scorri a destra e a sinistra' : ''); } catch(e) {}
-    if (on && !CV.imgs){
-      const st = $('cvStrip');
-      // subito le immagini piccole (già caricate), poi quelle grandi appena arrivano
-      CV.imgs = [1, 2, 3, 4].map(k => { const i = new Image(); i.alt = ''; i.src = 'cs2/cv' + k + '.jpg'; st.appendChild(i);
-        const big = new Image(); big.onload = () => { i.src = big.src; }; big.src = 'cs2/cz' + k + '.jpg'; return i; });
+  const CV = { on: false, y: 0, drag: null, auto: 1, t: 0 };
+
+  /* ---------- album della curva: si apre dallo striscione in CURVA SUD ---------- */
+  const ALB = { items: [["st", "st01.jpg", "Tessera Teste Matte 2003-2004"], ["st", "st02.jpg", "Tessera Teste Matte 1991 · Curva Sud P. Cotugno"], ["st", "st03.jpg", "Il foglio degli adesivi"], ["st", "st04.jpg", ""], ["st", "st05.jpg", ""], ["st", "st06.jpg", ""], ["st", "st07.jpg", ""], ["st", "st08.jpg", ""], ["st", "st09.jpg", ""], ["st", "st10.jpg", ""], ["st", "st11.jpg", ""], ["st", "st12.jpg", ""], ["st", "st13.jpg", ""], ["st", "st14.jpg", ""], ["st", "st15.jpg", ""], ["fz", "fz1.jpg", "Il Forbicione · Anno VIII n°2 · pagina 1"], ["fz", "fz2.jpg", "Il Forbicione · Anno VIII n°2 · pagina 2"], ["fz", "fz3.jpg", "Il Forbicione · Anno VIII n°2 · pagina 3"], ["fz", "fz4.jpg", "Il Forbicione · Anno VIII n°2 · pagina 4"], ["ph", "ph01.jpg", "1994-95 · Manfredonia – Tricase"], ["ph", "ph02.jpg", "1998-99 · Manfredonia – Locorotondo · Eccellenza"], ["ph", "ph03.jpg", "1998-99 · Manfredonia – Castellaneta · Eccellenza"], ["ph", "ph04.jpg", "1998-99 · Locorotondo – Manfredonia · Eccellenza"], ["ph", "ph05.jpg", "1998-99 · Manfredonia – Orlandina · finale spareggio promozione"], ["ph", "ph06.jpg", "3 ottobre 1999 · Ferrandina – Manfredonia · Serie D"], ["ph", "ph07.jpg", "3 ottobre 1999 · Ferrandina – Manfredonia · Serie D"], ["ph", "ph08.jpg", "3 ottobre 1999 · Ferrandina – Manfredonia · Serie D"], ["ph", "ph09.jpg", "12 dicembre 1999 · Melfi – Manfredonia · Serie D"], ["ph", "ph10.jpg", "9 aprile 2000 · Manfredonia – Casarano · Serie D"], ["ph", "ph11.jpg", "12 ottobre 2003 · Manfredonia – Pro Vasto · Serie D"], ["ph", "ph12.jpg", "15 febbraio 2004 · Pro Vasto – Manfredonia · Serie D"], ["ph", "ph13.jpg", "21 marzo 2004 · Grottaglie – Manfredonia"], ["ph", "ph14.jpg", "2 maggio 2004 · Manfredonia – Terracina · Serie D"], ["ph", "ph15.jpg", "2 maggio 2004 · Manfredonia – Terracina · Serie D"], ["ph", "ph16.jpg", "2 maggio 2004 · Manfredonia – Terracina · Serie D"], ["ph", "ph17.jpg", "5 febbraio 2006 · Manfredonia – Frosinone · Serie C1"], ["ph", "ph18.jpg", "5 febbraio 2006 · Manfredonia – Frosinone · Serie C1"], ["ph", "ph19.jpg", "Curva Sud"]], pages: [], i: -1, box: -1, z: 1, px: 0, py: 0, built: false };
+  function albBuild(){
+    if (ALB.built) return; ALB.built = true;
+    const by = k => ALB.items.map((it, n) => ({ k: it[0], src: 'alb/' + it[1], cap: it[2], n })).filter(x => x.k === k);
+    const st = by('st'), fz = by('fz'), ph = by('ph');
+    // adesivi: 4 per pagina, sparsi e un po' storti; fanzine: una pagina per foglio; foto: 2 per pagina con gli angolini e la didascalia
+    const SLOT4 = [[4,14,44,40],[52,12,44,38],[6,56,42,38],[52,54,42,40]], SLOT3 = [[6,16,42,40],[52,14,42,40],[28,56,44,38]];
+    let rnd = 7; const r = () => (rnd = (rnd*9301 + 49297) % 233280) / 233280;
+    for (let i = 0; i < st.length; i += 4){
+      const grp = st.slice(i, i + 4), sl = grp.length === 3 ? SLOT3 : SLOT4;
+      ALB.pages.push({ ch: 'st', title: i ? '' : 'GLI ADESIVI', its: grp.map((x, j) => ({ ...x, t: 'st', box: sl[j], rot: (r() - .5)*14 })) });
     }
-    if (on){ try { hint('', false); } catch(e) {} BEAT.ph = 0; CORI.next = 0; $('cvHint').style.opacity = 1; try { stopMusic(); } catch(e) {} ambSafe(); }
-    else { BEAT.bpm = 0; BEAT.run = false; BEAT.ph = 0; BEAT.k = 0; }
+    fz.forEach((x, j) => ALB.pages.push({ ch: 'fz', title: '', its: [{ ...x, t: 'fz', box: [27, 4, 46, 92], rot: (j % 2 ? 1.2 : -1.4) }] }));
+    const vd = by('vd');
+    for (let i = 0; i < ph.length; i += 2){
+      const grp = ph.slice(i, i + 2);
+      ALB.pages.push({ ch: 'ph', title: i ? '' : 'LE FOTO', credit: 'foto: Archivio Teste Matte Manfredonia',
+        its: grp.map((x, j) => ({ ...x, t: 'ph', box: grp.length === 1 ? [25, 16, 50, 72] : [j ? 52 : 5, j ? 22 : 13, 43, 70], rot: (j ? 2.2 : -2.6) + (r() - .5)*2 })) });
+    }
   }
+  function albVidPages(){ return ALB.items.map((it, n) => ({ k: it[0], src: 'alb/' + it[1], cap: it[2], n })).filter(x => x.k === 'vd')
+      .map((x, j) => ({ ch: 'vd', title: j ? '' : 'I VIDEO', its: [{ ...x, t: 'vd', box: [18, 16, 64, 70], rot: -1.5 }] })); }
+  function albPageEl(pg){
+    const port = innerHeight > innerWidth;
+    const el = document.createElement('div'); el.className = 'albPage';
+    if (pg.title){ const h = document.createElement('h3'); h.textContent = pg.title; el.appendChild(h); }
+    pg.its.forEach((it0, j) => { const it = { ...it0 };
+      if (port && it.t === 'ph') it.box = pg.its.length === 1 ? [10, 26, 80, 60] : [j ? 14 : 6, j ? 52 : 9, 80, 40];
+      if (port && it.t === 'fz') it.box = [7, 4, 86, 92];
+      const d = document.createElement('div'); d.className = 'albIt ' + it.t;
+      d.style.cssText = 'left:' + it.box[0] + '%;top:' + it.box[1] + '%;width:' + it.box[2] + '%;' + (it.t === 'ph' ? '' : 'height:' + it.box[3] + '%;') + 'transform:rotate(' + it.rot.toFixed(1) + 'deg)';
+      if (it.t === 'vd'){
+        d.innerHTML = '<div class="vhs"><img alt="" src="' + it.src.replace('.mp4', '.jpg') + '"><b>\u25B6</b><span class="vlab"></span></div>';
+        d.querySelector('.vlab').textContent = it.cap; d.addEventListener('click', e => { e.stopPropagation(); albZoom(it.n); }); el.appendChild(d); return;
+      }
+      const im = new Image(); im.alt = it.cap || ''; im.src = it.src; im.decoding = 'async'; d.appendChild(im);
+      if (it.t === 'ph'){ ['a','b','c','d'].forEach(c => { const s = document.createElement('i'); s.className = 'cn ' + c; d.appendChild(s); });
+        const c = document.createElement('div'); c.className = 'cap'; c.textContent = it.cap; d.appendChild(c); }
+      if (it.t === 'fz'){ [['-4%','-3%','-8deg'],['70%','-3%','7deg']].forEach(([l, t, a]) => { const s = document.createElement('i'); s.className = 'tape'; s.style.cssText = 'left:' + l + ';top:' + t + ';transform:rotate(' + a + ')'; d.appendChild(s); }); }
+      d.addEventListener('click', e => { e.stopPropagation(); albZoom(it.n); });
+      el.appendChild(d);
+    });
+    if (pg.credit){ const c = document.createElement('div'); c.className = 'credit'; c.textContent = pg.credit; el.appendChild(c); }
+    return el;
+  }
+  function albShow(i, dir){
+    const stage = $('albStage'), old = stage.querySelector('.albPage:not(.out):not(.outR)'), cov = stage.querySelector('.albCover');
+    ALB.i = Math.max(-1, Math.min(ALB.pages.length - 1, i));
+    if (ALB.i < 0){ if (old){ old.classList.add('outR'); setTimeout(() => old.remove(), 600); } if (cov) cov.classList.remove('open'); }
+    else {
+      if (cov) cov.classList.add('open');
+      const el = albPageEl(ALB.pages[ALB.i]);
+      if (dir < 0){ el.classList.add('out'); stage.appendChild(el); requestAnimationFrame(() => requestAnimationFrame(() => el.classList.remove('out'))); }
+      else stage.insertBefore(el, stage.firstChild);
+      if (old){ old.style.zIndex = 2; old.classList.add(dir < 0 ? 'outR' : 'out'); setTimeout(() => old.remove(), 600); }
+      // precarica la pagina dopo
+      const nx = ALB.pages[ALB.i + 1]; if (nx) nx.its.forEach(it => { const p = new Image(); p.src = it.src; });
+    }
+    const ch = ALB.i >= 0 ? ALB.pages[ALB.i].ch : '';
+    $('albTabs').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.ch === ch));
+    $('albPrev').disabled = ALB.i < 0; $('albNext').disabled = ALB.i >= ALB.pages.length - 1;
+    $('albNum').textContent = ALB.i < 0 ? 'TOCCA LA COPERTINA PER APRIRE' : 'PAGINA ' + (ALB.i + 1) + ' / ' + ALB.pages.length;
+    try { sfx.tick && sfx.tick(); } catch(e) {}
+  }
+  function albOpen(){
+    albBuild(); $('ovAlbum').hidden = false; $('cvBar').hidden = true;
+    const stage = $('albStage'); stage.innerHTML = '';
+    const c = document.createElement('div'); c.className = 'albCover';
+    c.innerHTML = '<div class="lbl">ROBA DELLA CURVA<br>NON TOCCARE!!</div><div class="ow">OVUNQUE</div>'
+      + '<div class="stk" style="left:8%;bottom:9%;width:34%;transform:rotate(-9deg)"><img src="alb/st07.jpg" alt=""></div>'
+      + '<div class="stk" style="right:7%;bottom:15%;width:30%;transform:rotate(8deg)"><img src="alb/st06.jpg" alt=""></div>'
+      + '<div class="stk" style="left:30%;bottom:30%;width:40%;transform:rotate(3deg)"><img src="alb/st13.jpg" alt=""></div>'
+      + '<i class="tp" style="left:60%;top:24%;transform:rotate(-20deg)"></i><em>TOCCA PER APRIRE</em>';
+    c.addEventListener('click', () => albShow(0, 1)); stage.appendChild(c);
+    ALB.i = -1; albShow(-1, 1);
+  }
+  function albClose(){ try { $('albBoxVid').pause(); } catch(e) {} ALB.playing = false; const back = !$('ovAlbum').hidden && CV.on; $('ovAlbum').hidden = true; $('albBox').hidden = true; if (back) { $('ovBox').hidden = false; return; } if (CV.on) $('cvBar').hidden = false; }
+  function albZoom(n){
+    if (n < 0 || n >= ALB.items.length) return;
+    ALB.box = n; ALB.z = 1; ALB.px = ALB.py = 0;
+    const it = ALB.items[n], img = $('albBoxImg'), vid = $('albBoxVid');
+    try { vid.pause(); } catch(e) {} ALB.playing = false;
+    if (it[0] === 'vd'){ img.hidden = true; vid.hidden = false; vid.src = 'alb/' + it[1]; ALB.playing = true; try { const p = vid.play(); if (p && p.catch) p.catch(() => {}); } catch(e) {} }
+    else { vid.hidden = true; vid.removeAttribute('src'); img.hidden = false; img.src = 'alb/' + it[1]; }
+    img.style.transform = ''; $('albBoxIn').classList.remove('z');
+    $('albBoxCap').textContent = it[2] || (it[0] === 'st' ? 'Adesivo Teste Matte' : '');
+    $('albBox').hidden = false; $('boxPrev').disabled = n <= 0; $('boxNext').disabled = n >= ALB.items.length - 1;
+  }
+  function albZoomApply(){ $('albBoxImg').style.transform = 'translate(' + ALB.px + 'px,' + ALB.py + 'px) scale(' + ALB.z + ')'; $('albBoxIn').classList.toggle('z', ALB.z > 1); }
+  (() => {
+    $('albClose').addEventListener('click', albClose);
+    $('albPrev').addEventListener('click', () => albShow(ALB.i - 1, -1));
+    $('albNext').addEventListener('click', () => albShow(ALB.i + 1, 1));
+    $('albTabs').addEventListener('click', e => { const ch = e.target.dataset && e.target.dataset.ch; if (!ch) return; albBuild();
+      const k = ALB.pages.findIndex(p => p.ch === ch); if (k >= 0) albShow(k, k >= ALB.i ? 1 : -1); });
+    // scorrere col dito tra le pagine
+    let sx = null;
+    $('albStage').addEventListener('pointerdown', e => { sx = e.clientX; });
+    $('albStage').addEventListener('pointerup', e => { if (sx == null) return; const dx = e.clientX - sx; sx = null;
+      if (Math.abs(dx) > 50){ if (dx < 0 && ALB.i < ALB.pages.length - 1) albShow(ALB.i + 1, 1); else if (dx > 0 && ALB.i >= 0) albShow(ALB.i - 1, -1); } });
+    // foto grande: tocca per ingrandire, trascina per spostarti, scorri per la prossima
+    const bin = $('albBoxIn'); let d = null, moved = false;
+    bin.addEventListener('pointerdown', e => { if (!$('albBoxVid').hidden) return; d = { x: e.clientX, y: e.clientY, px: ALB.px, py: ALB.py }; moved = false; try { bin.setPointerCapture(e.pointerId); } catch(_) {} });
+    bin.addEventListener('pointermove', e => { if (!d) return; const dx = e.clientX - d.x, dy = e.clientY - d.y; if (Math.abs(dx) + Math.abs(dy) > 8) moved = true;
+      if (ALB.z > 1){ ALB.px = d.px + dx; ALB.py = d.py + dy; albZoomApply(); } });
+    bin.addEventListener('pointerup', e => { if (!d) return; const dx = e.clientX - d.x; const was = d; d = null;
+      if (!moved){ if (!$('albBoxImg').hidden){ ALB.z = ALB.z > 1 ? 1 : 2.6; } else return; ALB.px = ALB.py = 0; albZoomApply(); return; }
+      if (ALB.z === 1 && Math.abs(dx) > 60) albZoom(ALB.box + (dx < 0 ? 1 : -1)); });
+    $('boxPrev').addEventListener('click', () => albZoom(ALB.box - 1));
+    $('boxNext').addEventListener('click', () => albZoom(ALB.box + 1));
+    $('boxClose').addEventListener('click', () => { $('albBox').hidden = true; try { $('albBoxVid').pause(); } catch(e) {} ALB.playing = false; });
+    $('albBoxVid').addEventListener('ended', () => { ALB.playing = false; });
+    $('albBoxVid').addEventListener('pause', () => { ALB.playing = false; });
+    $('albBoxVid').addEventListener('play', () => { ALB.playing = true; });
+    addEventListener('resize', () => { if ($('ovAlbum').hidden || ALB.i < 0) return; const st = $('albStage'), o = st.querySelector('.albPage:not(.out):not(.outR)'); if (!o) return; o.replaceWith(albPageEl(ALB.pages[ALB.i])); });
+  })();
+
+  /* ---------- lo scatolone ---------- */
+  const BOX = { playing: false };
+  function boxOpen(){ $('ovBox').hidden = false; $('cvBar').hidden = true; }
+  function boxClose(){ vhsStop(); $('ovBox').hidden = true; if (CV.on) $('cvBar').hidden = false; }
+  function vhsStop(){ try { $('vhsVid').pause(); } catch(e) {} $('vhsPlay').hidden = true; ALB.playing = false; }
+  (() => {
+    $('boxBack').addEventListener('click', boxClose);
+    $('boxBinder').addEventListener('click', () => { $('ovBox').hidden = true; albOpen(); });
+    $('boxVhs').addEventListener('click', () => { const v = $('vhsVid'); if (!v.src) v.src = 'alb/vd01.mp4'; $('vhsPlay').hidden = false; ALB.playing = true;
+      try { v.currentTime = 0; const p = v.play(); if (p && p.catch) p.catch(() => {}); } catch(e) {} });
+    $('vhsClose').addEventListener('click', vhsStop);
+    $('vhsVid').addEventListener('ended', () => { ALB.playing = false; });
+  })();
+  function curvaMode(on){
+    CV.on = on; CV.y = 0; CV.auto = 1; CV.t = 0; CV.drag = null;
+    if (!on){ try { albClose(); } catch(e) {} try { boxClose(); } catch(e) {} $('ovBox').hidden = true; }
+    $('ovStart').hidden = on; $('cvBar').hidden = !on; $('cvView').hidden = !on;
+    try { banner(on ? 'CURVA SUD' : 'PRONTO', on ? 'scorri giù: c\u2019è lo scatolone' : ''); } catch(e) {}
+    const vid = $('cvVid');
+    if (on){
+      if (!vid.src) vid.src = 'cv/curva.mp4';
+      try { const p = vid.play(); if (p && p.catch) p.catch(() => {}); } catch(e) {}
+      try { hint('', false); } catch(e) {} CORI.next = 0; $('cvHint').style.opacity = 1; try { stopMusic(); } catch(e) {} ambSafe();
+    } else { try { vid.pause(); } catch(e) {} BEAT.bpm = 0; BEAT.run = false; BEAT.ph = 0; BEAT.k = 0; }
+  }
+  function cvSpan(){ const v = $('cvView'), st = $('cvStrip'); return Math.max(0, st.offsetHeight - v.clientHeight); }
   function drawCurvaZoom(dt){
-    try { curvaFx(time); } catch(e) {}
     CV.t += dt;
-    if (CV.t > 4) $('cvHint').style.opacity = 0;
-    if (CV.auto) CV.x = .5 + Math.sin(CV.t*.22 - .35)*.5*.92;   // panoramica lenta finché non tocchi
-    const k = BEAT.k || 0;
-    if (k !== CV.fr && CV.imgs){ CV.imgs.forEach((im, i) => im.classList.toggle('on', i === k)); CV.fr = k; }
-    const v = $('cvView'), im = CV.imgs && CV.imgs[k];
-    if (!im || !im.naturalWidth || !v.clientHeight) return;
-    const vw = v.clientWidth, vh = v.clientHeight, iw = vh * im.naturalWidth/im.naturalHeight;
-    const tx = -Math.max(0, iw - vw) * CV.x;
-    $('cvStrip').style.transform = 'translate3d(' + tx.toFixed(1) + 'px,0,0)';
+    if (CV.t > 5 || CV.y > .5 || !cvSpan()) $('cvHint').style.opacity = 0;
+    const vid = $('cvVid'); if (vid.paused && !PAUSED) { try { const p = vid.play(); if (p && p.catch) p.catch(() => {}); } catch(e) {} }
+    const v = $('cvView'), st = $('cvStrip'), span = cvSpan();
+    // se la curva è più bassa dello schermo la centro, altrimenti si scorre in verticale
+    const ty = span > 0 ? -span*CV.y : (v.clientHeight - st.offsetHeight)/2;
+    st.style.transform = 'translate3d(0,' + ty.toFixed(1) + 'px,0)';
   }
+  const CV_UNUSED = 0;
 
   // spalti vivi: il pubblico (sopra la traversa e ai lati della porta) ondeggia; sul gol salta
   const CROWD = [[0, 140, W, 174], [0, 314, 158, 156], [1103, 314, 153, 156]];
@@ -2710,13 +2984,18 @@
   /* ---------- input ---------- */
   cv.addEventListener('pointerdown', e => { e.preventDefault(); if (CV.on) return; tap(e); });
   { const v = $('cvView');
-    v.addEventListener('pointerdown', e => { e.preventDefault(); CV.drag = { x: e.clientX, p: CV.x }; CV.auto = 0; try { v.setPointerCapture(e.pointerId); } catch(_) {} });
-    v.addEventListener('pointermove', e => { if (!CV.drag) return; const im = CV.imgs && CV.imgs[CV.fr < 0 ? 0 : CV.fr]; if (!im || !im.naturalWidth) return;
-      const iw = v.clientHeight * im.naturalWidth/im.naturalHeight, span = Math.max(1, iw - v.clientWidth);
-      CV.x = Math.max(0, Math.min(1, CV.drag.p - (e.clientX - CV.drag.x)/span)); });
-    ['pointerup','pointercancel'].forEach(n => v.addEventListener(n, () => { CV.drag = null; })); }
+    v.addEventListener('pointerdown', e => { if (e.target === $('cvBox')) return; e.preventDefault(); CV.drag = { y: e.clientY, p: CV.y, moved: 0 }; CV.auto = 0; try { v.setPointerCapture(e.pointerId); } catch(_) {} });
+    v.addEventListener('pointermove', e => { if (!CV.drag) return; const span = cvSpan(); if (!span) return;
+      CV.y = Math.max(0, Math.min(1, CV.drag.p - (e.clientY - CV.drag.y)/span)); });
+    ['pointerup','pointercancel'].forEach(n => v.addEventListener(n, () => { CV.drag = null; }));
+    v.addEventListener('wheel', e => { const span = cvSpan(); if (!span) return; CV.y = Math.max(0, Math.min(1, CV.y + e.deltaY/span)); e.preventDefault(); }, { passive: false });
+    $('cvBox').addEventListener('pointerdown', e => e.stopPropagation());
+    $('cvBox').addEventListener('click', e => { e.stopPropagation(); boxOpen(); }); }
   addEventListener('keydown', e => {
-    if (CV.on){ if (e.code === 'ArrowLeft'){ CV.x = Math.max(0, CV.x - .06); CV.auto = 0; } else if (e.code === 'ArrowRight'){ CV.x = Math.min(1, CV.x + .06); CV.auto = 0; } else if (e.code === 'Escape') curvaMode(false); e.preventDefault(); return; }
+    if (!$('ovAlbum').hidden){ if (!$('albBox').hidden){ if (e.code === 'ArrowLeft') albZoom(ALB.box - 1); else if (e.code === 'ArrowRight') albZoom(ALB.box + 1); else if (e.code === 'Escape') $('albBox').hidden = true; }
+      else if (e.code === 'ArrowLeft') albShow(ALB.i - 1, -1); else if (e.code === 'ArrowRight') albShow(ALB.i + 1, 1); else if (e.code === 'Escape') albClose(); e.preventDefault(); return; }
+    if (!$('ovBox').hidden){ if (e.code === 'Escape') { if (!$('vhsPlay').hidden) vhsStop(); else boxClose(); } e.preventDefault(); return; }
+    if (CV.on){ if (e.code === 'ArrowUp'){ CV.y = Math.max(0, CV.y - .15); } else if (e.code === 'ArrowDown'){ CV.y = Math.min(1, CV.y + .15); } else if (e.code === 'Enter' || e.code === 'Space'){ boxOpen(); } else if (e.code === 'Escape') curvaMode(false); e.preventDefault(); return; }
     if (e.code === 'Space' || e.code === 'Enter'){
       if (!$('splash').hidden){ e.preventDefault(); splashTap(); return; }
       if (document.activeElement && document.activeElement.tagName === 'BUTTON') return;
@@ -3150,6 +3429,23 @@
       });
     });
     $('stClose').addEventListener('click', () => { $('ovStats').hidden = true; $('ovStart').hidden = false; });
+    /* installazione dal sito: solo sulla pagina web (non nell'APK, non su Claude), e non se è già installato */
+    (() => {
+      if (!/github\.io$/.test(location.host)) return;
+      const add = (rel, href, extra) => { const l = document.createElement('link'); l.rel = rel; l.href = href; Object.assign(l, extra || {}); document.head.appendChild(l); };
+      add('manifest', 'manifest.webmanifest'); add('icon', 'icona-192.png'); add('apple-touch-icon', 'icona-192.png');
+      const m = document.createElement('meta'); m.name = 'apple-mobile-web-app-capable'; m.content = 'yes'; document.head.appendChild(m);
+      try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch(e) {}
+      const standalone = matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches || navigator.standalone;
+      if (standalone) return;
+      let ev = null;
+      $('btnInstall').hidden = false;
+      addEventListener('beforeinstallprompt', e => { e.preventDefault(); ev = e; $('instGo').hidden = false; $('instNow').hidden = false; });
+      addEventListener('appinstalled', () => { $('btnInstall').hidden = true; $('ovInstall').hidden = true; $('ovStart').hidden = false; });
+      $('btnInstall').addEventListener('click', () => { $('ovStart').hidden = true; $('ovInstall').hidden = false; });
+      $('instClose').addEventListener('click', () => { $('ovInstall').hidden = true; $('ovStart').hidden = false; });
+      $('instGo').addEventListener('click', async () => { if (!ev) return; ev.prompt(); try { await ev.userChoice; } catch(e) {} ev = null; $('instGo').hidden = true; $('instNow').hidden = true; });
+    })();
   })();
   /* ---------- SALA ONLINE: chi c'è, sfide, classifica (solo modalità Sfida) ---------- */
   const SALA = { db: null, id: null, ref: null, nick: '', list: {}, rank: {}, off: 0, out: null, inc: null, incT: 0 };
@@ -3283,7 +3579,7 @@
   function coriTick(){
     if (!AC || muted) return;
     const now = AC.currentTime;
-    const on = (CV.on || !['title','over','intro','statua','outro','royal','royalIn','royalOut','back98'].includes(S.mode)) && $('ovStart').hidden && $('ovEnd').hidden && $('splash').hidden && !PAUSED;
+    const on = !(typeof ALB !== 'undefined' && ALB.playing) && (CV.on || !['title','over','intro','statua','outro','royal','royalIn','royalOut','back98'].includes(S.mode)) && $('ovStart').hidden && $('ovEnd').hidden && $('splash').hidden && !PAUSED;
     if (!on){ BEAT.bpm = 0; if (CORI.h){ stopSnd(CORI.h, 1.2); CORI.h = null; if (amb) amb.gain.setTargetAtTime(1, now, .5); } CORI.next = now + 1.5; return; }
     // quando parla il telecronista i cori si abbassano
     if (CORI.h){ const talk = voxSrc.some(h => h.end > now); CORI.h.g.gain.setTargetAtTime(talk ? .5 : 1.3, now, .25); if (amb) amb.gain.setTargetAtTime(.45, now, .5); }
