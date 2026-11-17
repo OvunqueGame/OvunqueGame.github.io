@@ -58,6 +58,10 @@
   .mpbox{display:flex;flex-direction:column;gap:10px;align-items:center;max-width:520px;width:100%}
   .mpbox .btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
   #salaNick{font:inherit;font-size:13px;width:15em;max-width:70vw;text-align:center;padding:10px;background:#05081a;color:var(--yellow);border:3px solid #fff}
+  /* sala online: se la lista e la classifica non ci stanno, la schermata scorre e il pulsante per uscire resta raggiungibile */
+  #ovSala{justify-content:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  #ovSala>h1{margin-top:auto} #ovSala>.btns:last-child{margin-bottom:auto;padding-bottom:8px}
+  #salaBackTop{position:sticky;top:0;align-self:flex-start;z-index:2;font:inherit;font-size:clamp(8px,2vw,11px);padding:8px 12px;background:#2f6fe0;color:#fff;border:3px solid #05081a;cursor:pointer;flex:none}
   .salagrid{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;width:100%;max-width:820px}
   .salagrid>div{flex:1 1 260px;min-width:0;background:rgba(5,8,26,.75);border:3px solid #2b4680;padding:10px}
   .salagrid h2{font-size:clamp(9px,2.2vw,12px);color:var(--yellow);margin:0 0 8px;font-weight:400}
@@ -403,6 +407,7 @@
         <div class="btns"><button class="btn gold" id="mpResume" type="button">RIPRENDI</button></div>
       </div>
       <div class="overlay" id="ovSala" hidden>
+        <button type="button" id="salaBackTop">◀ INDIETRO</button>
         <h1>SALA ONLINE</h1>
         <p class="mpst" id="salaHead"></p>
         <div class="salagrid">
@@ -536,7 +541,7 @@
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const $ = id => document.getElementById(id);
   const AUD = {}, AUDRAW = {};
-  const AUD_FILES = ['coro1','coro2','coro3','nooo1','nooo2','rabbia1','rabbia2','risate1','risate2','tele','reale','punti','re','amb','roar1','roar2','roar3','cheer1','cheer2','cheer3','kick1','kick2','splash','sea','title','win','lose','fuse','boom','sting','whistle','post','ohhh','save','buu','heart','lock','splat','kiss','thunder','horns','medieval'];
+  const AUD_FILES = ['coro1','coro2','coro3','nooo1','nooo2','rabbia1','rabbia2','risate1','risate2','tele','reale','punti','re','amb','roar1','roar2','roar3','cheer1','cheer2','cheer3','kick1','kick2','splash','sea','title','win','lose','fuse','boom','sting','whistle','post','ohhh','save','buu','heart','lock','splat','kiss','thunder','horns','medieval','figlio'];
   const FONT = '"Press Start 2P", monospace';
 
   /* ---------- immagini ---------- */
@@ -949,7 +954,26 @@
     voxEnd = Math.max(0, ...voxSrc.map(h => h.end));
     return Math.max(0, voxEnd - now) + .05;
   }
+  // coro "Figlio unico" della curva: parte qualche secondo prima che il telecronista lo annunci
+  const FIG = { h: null, end: 0, tok: 0, wait: null }, FIG_LEAD = 3;
+  function figlioStart(){
+    if (!AC || muted || !AUD.figlio || FIG.h) return false;
+    const now = AC.currentTime, h = play('figlio', { vol: .001 }); if (!h) return false;
+    h.g.gain.setTargetAtTime(1.3, now, .4);
+    if (CORI.h){ stopSnd(CORI.h, 1.2); CORI.h = null; BEAT.bpm = 0; }
+    FIG.h = h; FIG.end = now + AUD.figlio.duration; CORI.next = FIG.end + 2;
+    return true;
+  }
   function subtitle(text, onDone, prio){
+    FIG.tok++; clearTimeout(FIG.wait);
+    if (text && /figlio unico/i.test(text) && figlioStart()){
+      const tk = FIG.tok; clearInterval(sub.timer); clearTimeout(sub.hold); clearTimeout(sub.hide); S.subBusy = true;
+      FIG.wait = setTimeout(() => { if (tk === FIG.tok) subtitleNow(text, onDone, prio); }, FIG_LEAD*1000);
+      return;
+    }
+    subtitleNow(text, onDone, prio);
+  }
+  function subtitleNow(text, onDone, prio){
     const el = $('subs');
     clearInterval(sub.timer); clearTimeout(sub.hold); clearTimeout(sub.hide);
     const vdur = text ? voxSay(text, prio) : 0;
@@ -979,7 +1003,7 @@
     return false;
   }
   function pages(list, onDone){ let k = 0; const nxt = () => { if (k >= list.length){ if (onDone) onDone(); return; } subtitle(list[k++], nxt); }; nxt(); }
-  function hideSubs(){ clearInterval(sub.timer); clearTimeout(sub.hold); clearTimeout(sub.hide); sub.onDone = null; S.subBusy = false; $('subs').hidden = true; }
+  function hideSubs(){ FIG.tok++; clearTimeout(FIG.wait); clearInterval(sub.timer); clearTimeout(sub.hold); clearTimeout(sub.hide); sub.onDone = null; S.subBusy = false; $('subs').hidden = true; }
 
   // presentazione prima dei rigori
   function introPages(){
@@ -1893,7 +1917,8 @@
     for (let i = 0; i < 6; i++) noiseHit(t0 + i*.19, { type: 'lowpass', f: 140, q: 1, vol: .7, a: .002, rel: .18 }); } catch(e) {} }
   const ROMAN = n => n === 0 ? 'N' : [['X',10],['IX',9],['V',5],['IV',4],['I',1]].reduce((o, [r, v]) => { while (n >= v){ o += r; n -= v; } return o; }, '');
   function royalBoard(){
-    const txt = S.game === 'sfida' ? (() => { const { a, b } = sfState(); return 'MF ' + ROMAN(a) + ' · ' + ROMAN(b) + ' BAR'; })() : 'GOL ' + (S.gol ? ROMAN(S.gol) : '—');
+    if (S.game === 'sfida') return;   // nella SFIDA niente tabellone con i nomi delle squadre durante la scena del Re
+    const txt = 'GOL ' + (S.gol ? ROMAN(S.gol) : '—');
     ctx.save(); ctx.fillStyle = '#e9d9a8'; ctx.strokeStyle = '#5a3a14'; ctx.lineWidth = 6;
     ctx.fillRect(14, 14, 470, 76); ctx.strokeRect(14, 14, 470, 76);
     ctx.font = 'bold italic 40px "Old English Text MT", "UnifrakturMaguntia", Georgia, serif'; ctx.fillStyle = '#3a1d06'; ctx.textAlign = 'center';
@@ -3572,6 +3597,7 @@
   }
   $('salaGo').addEventListener('click', salaEnter);
   $('salaExit').addEventListener('click', salaLeave);
+  $('salaBackTop').addEventListener('click', salaLeave);
   $('invYes').addEventListener('click', () => salaAnswer(true));
   $('invNo').addEventListener('click', () => salaAnswer(false));
   /* ---------- cori veri della curva, di continuo durante le partite ---------- */
@@ -3583,11 +3609,16 @@
     const vhs = typeof ALB !== 'undefined' && ALB.playing;
     const inGame = !['title','over'].includes(S.mode) && $('ovStart').hidden && $('ovEnd').hidden && $('splash').hidden;
     const ambOn = !vhs && (CV.on || inGame);
-    if (amb){ const tgt = ambOn ? (CORI.h ? .45 : 1) : .0001; if (Math.abs((amb._t || 1) - tgt) > .001){ amb.gain.setTargetAtTime(tgt, now, ambOn ? .5 : .25); amb._t = tgt; } }
+    // quando entra il Re a cavallo lo stadio si ammutolisce: il brusio quasi sparisce
+    const hush = S.mode === 'royalIn';
+    // coro Figlio unico: si abbassa quando parla il telecronista, si ferma fuori dalla partita
+    if (FIG.h){ if (now >= FIG.end) FIG.h = null; else if (!ambOn || hush){ stopSnd(FIG.h, 1.2); FIG.h = null; } else { const talk = voxSrc.some(v => v.end > now); FIG.h.g.gain.setTargetAtTime(talk ? .5 : 1.3, now, .25); } }
+    if (amb){ const tgt = !ambOn ? .0001 : hush ? .04 : ((CORI.h || FIG.h) ? .45 : 1); if (Math.abs((amb._t || 1) - tgt) > .001){ amb.gain.setTargetAtTime(tgt, now, hush ? .6 : ambOn ? .5 : .25); amb._t = tgt; } }
     const on = !vhs && (CV.on || !['title','over','intro','statua','outro','royal','royalIn','royalOut','back98'].includes(S.mode)) && $('ovStart').hidden && $('ovEnd').hidden && $('splash').hidden && !PAUSED;
     if (!on){ BEAT.bpm = 0; if (CORI.h){ stopSnd(vhs ? Object.assign(CORI.h) : CORI.h, vhs ? .3 : 1.2); CORI.h = null; } CORI.next = now + 1.5; return; }
     // quando parla il telecronista i cori si abbassano
     if (CORI.h){ const talk = voxSrc.some(h => h.end > now); CORI.h.g.gain.setTargetAtTime(talk ? .5 : 1.3, now, .25); }
+    if (FIG.h) return;   // mentre canta Figlio unico niente altri cori
     if (CORI.h && now < CORI.end) return;
     if (CORI.h){ CORI.h = null; BEAT.bpm = 0; CORI.next = now + (CV.on ? .6 : 1.5 + Math.random()*3.5); }
     if (now < CORI.next) return;
