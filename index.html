@@ -534,7 +534,7 @@
   const W = 1256, H = 941;
   const GX = 630, HALF = 458, GTOP = 325, GLINE = 676, GH = GLINE - GTOP;
   const gx = u => GX + u * HALF, gy = v => GLINE - v * GH;
-  const BALL = { x: 630, y: 790, r: 27 };
+  const BALL = { x: 630, y: 790, r: 27 }, BALL_SHRINK = 7;
   const TOTAL = 7;          // solo per la SFIDA (vecchio valore); la LEGGENDA va a oltranza
   const FESTA = 10;        // LEGGENDA: da qui in su si festeggia con Re Manfredi
   const cv = document.getElementById('c'), ctx = cv.getContext('2d');
@@ -1322,7 +1322,7 @@
     if (r === 'gol'){
       S.gol++; S.zoom = 1; sfx.goal(); if (!(S.mp && S.mp.shooter === 'av')){ S.celeb = 3.2; confetti(); smokeBurst(); }
       S.ripple = { x: s.bx, y: s.by, t: 0 };
-      s.phys = { vx: s.u*30, vy: -20, g: 500, dr: -4, floor: Math.min(GLINE - 10, s.by + 40) };
+      s.phys = { vx: s.u*30, vy: -20, g: 500, dr: 0, floor: Math.min(GLINE - 10, s.by + 40) };
       let t = 'GOL!', sub = pick(['palla da una parte, portiere dall\'altra','rete gonfia','lo stadio esplode','il bomber colpisce ancora']);
       if (au > .75 && s.v > .72){ t = 'SOTTO IL SETTE!'; sub = 'dove il portiere non arriva'; }
       else if (s.v < .2 && au > .55){ t = 'RASOTERRA!'; sub = 'angolino basso, chirurgico'; }
@@ -1385,7 +1385,7 @@
   function resolvePara(s, r, au){
     if (r === 'gol'){
       sfx.out(); S.ripple = { x: s.bx, y: s.by, t: 0 };
-      s.phys = { vx: s.u*30, vy: -20, g: 500, dr: -4, floor: Math.min(GLINE - 10, s.by + 40) };
+      s.phys = { vx: s.u*30, vy: -20, g: 500, dr: 0, floor: Math.min(GLINE - 10, s.by + 40) };
       const t = !S.pick ? 'GOL SUBITO' : (Math.sign(s.ku) && Math.sign(s.ku) !== Math.sign(s.u) ? 'SPIAZZATO!' : 'GOL SUBITO');
       banner(t, !S.pick ? 'non ti sei tuffato' : pick(['la prossima la prendi','imparabile','ci sei andato vicino']));
       bigText(t, '#ffffff');
@@ -2653,7 +2653,7 @@
       const e = Math.min(1, (S.t - CT)/FD), k = 1 - (1 - e)**2;
       const ex = gx(s.u), ey = gy(Math.min(s.v, 1.3));
       const arc = Math.sin(Math.PI*e) * (20 + s.v*90);
-      s.bx = BALL.x + (ex - BALL.x)*k; s.by = BALL.y + (ey - BALL.y)*k - arc; s.br = BALL.r - 13*k;
+      s.bx = BALL.x + (ex - BALL.x)*k; s.by = BALL.y + (ey - BALL.y)*k - arc; const ks = e*e*(3 - 2*e); s.br = BALL.r - BALL_SHRINK*ks;   // si rimpicciolisce piano e in modo uniforme, senza diventare una pallina da tennis
       shadow(s.bx, BALL.y + 24 + (GLINE + 2 - BALL.y - 24)*k, s.br*1.8, .25);
       ballDraw(s.bx, s.by, s.br);
       if (e >= 1) resolve();
