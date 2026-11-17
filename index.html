@@ -948,20 +948,21 @@
     if (!prio && parts[0][0] !== 1 && parts[0][0] !== 3 && t - now > 4) return 0;   // troppo in ritardo: resta solo scritta (il Re aspetta sempre il suo turno)
     for (const [f, off, dur] of parts){
       const buf = f === 3 ? AUD.re : f === 2 ? AUD.punti : f === 1 ? AUD.reale : AUD.tele; if (!buf) continue;
-      try { const src = AC.createBufferSource(), g = AC.createGain(); src.buffer = buf; g.gain.value = 1.35;
+      try { const src = AC.createBufferSource(), g = AC.createGain(); src.buffer = buf; g.gain.value = FIG.h ? FIG_VOX : 1.35;   // mentre canta Figlio unico la telecronaca si sente appena
         src.connect(g).connect(master); src.start(t, off, dur); voxSrc.push({ src, g, start: t, end: t + dur, buf, off }); t += dur + .25; } catch(e) {}
     }
     voxEnd = Math.max(0, ...voxSrc.map(h => h.end));
     return Math.max(0, voxEnd - now) + .05;
   }
   // coro "Figlio unico" della curva: parte qualche secondo prima che il telecronista lo annunci
-  const FIG = { h: null, end: 0, tok: 0, wait: null }, FIG_LEAD = 3;
+  const FIG = { h: null, end: 0, tok: 0, wait: null }, FIG_LEAD = 3, FIG_VOX = .34;
   function figlioStart(){
     if (!AC || muted || !AUD.figlio || FIG.h) return false;
     const now = AC.currentTime, h = play('figlio', { vol: .001 }); if (!h) return false;
     h.g.gain.setTargetAtTime(1.3, now, .4);
     if (CORI.h){ stopSnd(CORI.h, 1.2); CORI.h = null; BEAT.bpm = 0; }
     FIG.h = h; FIG.end = now + AUD.figlio.duration; CORI.next = FIG.end + 2;
+    voxSrc.forEach(v => { try { v.g.gain.setTargetAtTime(FIG_VOX, now, .3); } catch(e) {} });   // abbassa anche la frase già in corso
     return true;
   }
   function subtitle(text, onDone, prio){
@@ -3612,7 +3613,7 @@
     // quando entra il Re a cavallo lo stadio si ammutolisce: il brusio quasi sparisce
     const hush = S.mode === 'royalIn';
     // coro Figlio unico: si abbassa quando parla il telecronista, si ferma fuori dalla partita
-    if (FIG.h){ if (now >= FIG.end) FIG.h = null; else if (!ambOn || hush){ stopSnd(FIG.h, 1.2); FIG.h = null; } else { const talk = voxSrc.some(v => v.end > now); FIG.h.g.gain.setTargetAtTime(talk ? .5 : 1.3, now, .25); } }
+    if (FIG.h){ if (now >= FIG.end) FIG.h = null; else if (!ambOn || hush){ stopSnd(FIG.h, 1.2); FIG.h = null; } else FIG.h.g.gain.setTargetAtTime(1.3, now, .25); }   // il coro resta pieno, è la telecronaca che si abbassa
     if (amb){ const tgt = !ambOn ? .0001 : hush ? .04 : ((CORI.h || FIG.h) ? .45 : 1); if (Math.abs((amb._t || 1) - tgt) > .001){ amb.gain.setTargetAtTime(tgt, now, hush ? .6 : ambOn ? .5 : .25); amb._t = tgt; } }
     const on = !vhs && (CV.on || !['title','over','intro','statua','outro','royal','royalIn','royalOut','back98'].includes(S.mode)) && $('ovStart').hidden && $('ovEnd').hidden && $('splash').hidden && !PAUSED;
     if (!on){ BEAT.bpm = 0; if (CORI.h){ stopSnd(vhs ? Object.assign(CORI.h) : CORI.h, vhs ? .3 : 1.2); CORI.h = null; } CORI.next = now + 1.5; return; }
