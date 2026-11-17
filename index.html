@@ -1332,12 +1332,12 @@
       say(line({ 'SOTTO IL SETTE!':'sette', 'RASOTERRA!':'rasoterra', 'CUCCHIAIO!':'cucchiaio', 'SPIAZZATO!':'spiazzato' }[t] || 'gol'));
     } else {
       if (r === 'parata'){
-        sfx.save(); s.phys = { vx: (s.u >= 0 ? 1 : -1)*420, vy: -300, g: 1300, dr: 6 };
+        sfx.save(); s.phys = { vx: (s.u >= 0 ? 1 : -1)*420, vy: -300, g: 1300, z: 1, vz: -.45 };
         const t = pick(['PARATA!','RESPINTA!','IL PORTIERE C\'È']);
         banner(t, pick(['tiro troppo telefonato','l\'aveva letto','manone sul pallone'])); bigText(t, '#ffffff');
         say(line('parata'));
       } else if (r === 'palo' || r === 'traversa'){
-        sfx.post(); S.shake = .4; s.phys = { vx: -Math.sign(s.u)*150 + (Math.random()-.5)*100, vy: r === 'traversa' ? 300 : 160, g: 900, dr: 18 };
+        sfx.post(); S.shake = .4; s.phys = { vx: -Math.sign(s.u)*150 + (Math.random()-.5)*100, vy: r === 'traversa' ? 300 : 160, g: 900, z: 1, vz: -(.65 + Math.random()*.25) };
         const t = r === 'palo' ? 'PALO!' : 'TRAVERSA!';
         banner(t, pick(['che sfortuna','il legno dice no','sentito il rumore?'])); bigText(t, '#ffffff');
         say(line(r));
@@ -1392,11 +1392,11 @@
     } else {
       S.gol++; S.celeb = 3.2; S.zoom = 1; confetti(); smokeBurst();
       if (r === 'parata'){
-        sfx.save(); sfx.goal(); s.phys = { vx: (s.u >= 0 ? 1 : -1)*420, vy: -300, g: 1300, dr: 6 };
+        sfx.save(); sfx.goal(); s.phys = { vx: (s.u >= 0 ? 1 : -1)*420, vy: -300, g: 1300, z: 1, vz: -.45 };
         const t = au > .7 && s.v > .65 ? 'PARATA PAZZESCA!' : pick(['PARATA!','RESPINTA!','SARACINESCA!']);
         banner(t, pick(['il muro di Manfredonia','la curva impazzisce','l\'avevi letto']), 'gold'); bigText(t, '#ffd23f');
       } else if (r === 'palo' || r === 'traversa'){
-        sfx.post(); sfx.goal(); S.shake = .4; s.phys = { vx: -Math.sign(s.u)*150 + (Math.random()-.5)*100, vy: r === 'traversa' ? 300 : 160, g: 900, dr: 18 };
+        sfx.post(); sfx.goal(); S.shake = .4; s.phys = { vx: -Math.sign(s.u)*150 + (Math.random()-.5)*100, vy: r === 'traversa' ? 300 : 160, g: 900, z: 1, vz: -(.65 + Math.random()*.25) };
         const t = r === 'palo' ? 'PALO!' : 'TRAVERSA!';
         banner(t, 'ti salva il legno', 'gold'); bigText(t, '#ffd23f');
       } else {
@@ -2660,9 +2660,17 @@
       return;
     }
     const p = s.phys; if (!p) return;
-    s.bx += p.vx*dt; s.by += p.vy*dt; p.vy += p.g*dt; s.br = Math.max(6, Math.min(40, s.br + p.dr*dt));
+    s.bx += p.vx*dt; s.by += p.vy*dt; p.vy += p.g*dt;
+    if (p.z !== undefined){
+      // rimbalzo (palo, traversa, respinta): il pallone torna verso il dischetto e riprende la sua grandezza
+      // in base a quanta strada fa indietro (z = 1 sulla linea di porta, 0 sul dischetto)
+      p.z = Math.max(0, p.z + p.vz*dt); if (p.z === 0) p.vz = 0;
+      s.br = BALL.r - BALL_SHRINK*p.z;
+      const gr = BALL.y + BALL.r, fy = gr + (GLINE - gr)*p.z - s.br;   // centro del pallone appoggiato sul prato a quella distanza
+      if (s.by > fy){ s.by = fy; if (p.vy > 60){ p.vy *= -.45; p.vx *= .8; p.vz *= .8; } else { p.vy = 0; p.vx *= .9; p.vz *= .9; } }
+    } else s.br = Math.max(6, Math.min(40, s.br + (p.dr || 0)*dt));
     if (p.floor && s.by > p.floor){ s.by = p.floor; p.vy = 0; p.vx *= .85; }
-    if (!p.floor && !p.fade && s.by > 900){ s.by = 900; p.vy *= -.4; p.vx *= .7; }
+    if (p.z === undefined && !p.floor && !p.fade && s.by > 900){ s.by = 900; p.vy *= -.4; p.vx *= .7; }
     let a = 1; if (p.fade) a = Math.max(0, 1 - S.t/.8);
     if (a > 0) ballDraw(s.bx, s.by, s.br, a);
   }
