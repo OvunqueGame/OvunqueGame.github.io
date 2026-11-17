@@ -826,7 +826,7 @@
     outroWin: ['Stasera braciole per tutti, la festa continua a tavola!','Figlio unico risuona fino al lungomare.','Pascalin tu, cantato da tutto lo stadio: che serata!'],
     outroLoss: ['La curva canta Pascalin tu anche nella sconfitta.','Almeno le braciole del pranzo non ce le toglie nessuno.']
   };
-  const SPECIAL = { pre: ['La curva intona Figlio unico, l\'inno del Manfredonia e del Miramare!'], gol: ['Questo gol vale un altro giro di braciole!'], fuori: ['Qualcuno vada a riprenderlo da Maradoss!'] };
+  const SPECIAL = { pre: [], gol: ['Questo gol vale un altro giro di braciole!'], fuori: ['Qualcuno vada a riprenderlo da Maradoss!'] };
   const SPECIAL_SET = new Set(Object.values(SPECIAL).flat());
   const RARE_MAX = { maradoss: 1, braciole: 1, cori: 2 };
   const themeOf = t => /Maradoss/.test(t) ? 'maradoss' : /braciol/i.test(t) ? 'braciole' : 'cori';
@@ -957,7 +957,7 @@
   // coro "Figlio unico" della curva: parte qualche secondo prima che il telecronista lo annunci
   const FIG = { h: null, end: 0, tok: 0, wait: null }, FIG_LEAD = 3, FIG_VOX = .34;
   function figlioStart(){
-    if (!AC || muted || !AUD.figlio || FIG.h) return false;
+    if (!AC || muted || !AUD.figlio || FIG.h || S.game !== 'sfida') return false;
     const now = AC.currentTime, h = play('figlio', { vol: .001 }); if (!h) return false;
     h.g.gain.setTargetAtTime(1.3, now, .4);
     if (CORI.h){ stopSnd(CORI.h, 1.2); CORI.h = null; BEAT.bpm = 0; }
@@ -1080,7 +1080,8 @@
   // ultima frase prima della scena finale: annuncia quello che si vedrà, senza contraddirlo
   function outroBridge(){
     const k = sceneKind();
-    if (k === 'statua') return 'La curva intona Figlio unico, l\'inno del Manfredonia e del Miramare!';
+    // Figlio unico (coro + frase) solo alla vittoria in SFIDA, anche online; nella LEGGENDA solo la festa
+    if (k === 'statua') return S.game === 'sfida' ? 'La curva intona Figlio unico, l\'inno del Manfredonia e del Miramare!' : 'Che festa sugli spalti!';
     if (k === 'sconfitta') return 'Buuu!';
     if (k === 'record') return 'Nuovo record!';
     if (k === 'buu') return 'Niente record, la curva fischia.';
